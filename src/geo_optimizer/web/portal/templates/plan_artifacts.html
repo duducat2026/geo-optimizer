@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+{% block content %}
+<h2 class="page-title">{{ _('artifacts_manage') }}</h2>
+
+<div class="card">
+  <p><strong>{{ task.target_url }}</strong></p>
+  <p class="muted">{{ _('artifact_hint') }}</p>
+</div>
+
+<div class="card">
+  <h3>{{ _('artifact_section') }}（{{ rows | length }}）</h3>
+  <div class="table-wrap">
+    <table class="table">
+      <thead><tr>
+        <th>{{ _('belong_item') }}</th>
+        <th>{{ _('artifact_name') }}</th>
+        <th>{{ _('filename') }}</th>
+        <th>{{ _('item_source') }}</th>
+        <th>{{ _('updated_at') }}</th>
+        <th>{{ _('actions') }}</th>
+      </tr></thead>
+      <tbody>
+        {% for art, item in rows %}
+        <tr>
+          <td>{{ item.title if item else '-' }}</td>
+          <td>{{ art.kind }}</td>
+          <td>{{ art.filename }}</td>
+          <td><span class="badge muted">{{ _('source_' + art.source) }}</span></td>
+          <td class="muted">{{ art.updated_at | localtime }}</td>
+          <td>
+            <a class="btn btn-sm" href="{{ url_for('plan.artifact_edit', artifact_id=art.id) }}">
+              {{ _('edit_item') }}</a>
+            <a class="btn btn-sm btn-ghost" href="{{ url_for('plan.artifact_download', artifact_id=art.id) }}">
+              {{ _('artifact_download') }}</a>
+            {% if item %}
+            <form method="post" style="display:inline"
+                  action="{{ url_for('plan.artifact_generate', item_id=item.id, kind=art.kind) }}">
+              <input type="hidden" name="next"
+                     value="{{ url_for('plan.artifact_list', task_id=task.id) }}">
+              <button class="btn btn-sm btn-ghost" type="submit">{{ _('artifact_regenerate') }}</button>
+            </form>
+            {% endif %}
+            <form method="post" style="display:inline"
+                  action="{{ url_for('plan.artifact_delete', artifact_id=art.id) }}"
+                  data-confirm="{{ _('confirm_delete') }}">
+              <button class="btn btn-sm btn-danger" type="submit">{{ _('delete') }}</button>
+            </form>
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="6" class="muted">{{ _('no_data') }}</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+{% if missing %}
+<div class="card">
+  <h3>{{ _('artifact_missing_title') }}（{{ missing | length }}）</h3>
+  <div class="table-wrap">
+    <table class="table">
+      <thead><tr>
+        <th>{{ _('belong_item') }}</th>
+        <th>{{ _('artifact_name') }}</th>
+        <th>{{ _('filename') }}</th>
+        <th>{{ _('actions') }}</th>
+      </tr></thead>
+      <tbody>
+        {% for item, spec in missing %}
+        <tr>
+          <td>{{ item.title }}</td>
+          <td>{{ spec.title.get(current_locale, spec.title['zh']) }}</td>
+          <td class="muted">{{ spec.filename }}</td>
+          <td>
+            <form method="post" style="display:inline"
+                  action="{{ url_for('plan.artifact_generate', item_id=item.id, kind=spec.kind) }}">
+              <input type="hidden" name="next"
+                     value="{{ url_for('plan.artifact_list', task_id=task.id) }}">
+              <button class="btn btn-sm" type="submit">{{ _('artifact_generate') }}</button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endif %}
+
+<p><a href="{{ url_for('plan.item_list', task_id=task.id) }}">&larr; {{ _('plan_items_title') }}</a></p>
+{% endblock %}

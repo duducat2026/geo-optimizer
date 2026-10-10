@@ -1,0 +1,60 @@
+# 不进入 Docker 构建上下文的内容（与 .gitignore 相互独立，宁可多排除）
+# 注意：dockerignore 的模式默认只匹配上下文根，嵌套路径需 ** 前缀（与 .gitignore 语义不同）
+
+# 依赖与构建产物（镜像内重建）
+**/__pycache__/
+**/*.py[cod]
+**/*.egg-info/
+.eggs/
+build/
+dist/
+.venv/
+venv/
+output/
+.pytest_cache/
+
+# 文档与开发专用目录（运行时不需要；README.md 除外——pip 安装元数据依赖）
+# docs/geo-skill/ 除外：Web 平台的 SKILL 包导出功能在运行时读取该目录
+# （SKILL.md / .clawhubignore / scripts/*.py；config.json 含真实凭据仍被 **/config.json 排除）
+docs/*
+!docs/geo-skill/
+tests/
+client/
+examples/
+CITATION.cff
+
+# VCS 与本地工具目录
+.git
+.gitignore
+.dockerignore
+.idea
+.vscode
+.qoder
+.DS_Store
+Thumbs.db
+
+# 凭据与本机环境（示例文件除外）
+**/.env
+**/.env.*
+!**/.env.example
+geo_config.local.yaml
+deployment/settings.py
+deployment/mcp.env
+**/config.json
+*.pem
+*.key
+*.p12
+*.pfx
+
+# 运行期数据、日志与备份
+data/
+tmp/
+temp/
+logs/
+**/*.log
+backups/
+**/*.bak
+**/*.bak.*
+**/*.bundle
+**/*.dump
+**/*.sql.gz

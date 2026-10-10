@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+{% block content %}
+<h2 class="page-title">{{ _('audit_title') }}</h2>
+
+<div class="card">
+  <h3>{{ _('audit_stats') }}</h3>
+  <div class="grid grid-3">
+    {% for act, cnt in stats %}
+    <div class="stat">
+      <div class="num">{{ cnt }}</div>
+      <div class="label">{{ act }}</div>
+    </div>
+    {% else %}
+    <p class="muted">{{ _('no_data') }}</p>
+    {% endfor %}
+  </div>
+</div>
+
+<div class="card">
+  <form method="get" class="inline-form">
+    <input type="text" name="username" placeholder="{{ _('username') }}"
+           value="{{ f_username }}">
+    <select name="action">
+      <option value="">{{ _('action') }} - *</option>
+      {% for act in actions %}
+      <option value="{{ act }}" {{ 'selected' if f_action == act else '' }}>{{ act }}</option>
+      {% endfor %}
+    </select>
+    <button class="btn btn-sm" type="submit">{{ _('filter') }}</button>
+  </form>
+
+  <form method="post" id="audit-batch-form"
+        action="{{ url_for('admin.audit_batch_delete', page=page, per_page=per_page,
+                           username=f_username, action=f_action) }}"
+        data-confirm="{{ _('confirm_delete') }}">
+  <div class="table-wrap mt">
+    <table>
+      <thead>
+        <tr>
+          <th style="width:32px;">
+            <input type="checkbox" id="audit-check-all"
+                   onclick="document.querySelectorAll('.audit-check').forEach(c => c.checked = this.checked)">
+          </th>
+          <th>{{ _('time') }}</th>
+          <th>{{ _('username') }}</th>
+          <th>{{ _('action') }}</th>
+          <th>{{ _('target_url') }}</th>
+          <th>{{ _('ip') }}</th>
+          <th>{{ _('detail') }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for log in logs %}
+        <tr>
+          <td><input type="checkbox" class="audit-check" name="log_ids" value="{{ log.id }}"></td>
+          <td>{{ log.created_at | localtime('%Y-%m-%d %H:%M:%S') }}</td>
+          <td>{{ log.username }}</td>
+          <td><span class="badge">{{ log.action }}</span></td>
+          <td>{{ log.target }}</td>
+          <td>{{ log.ip }}</td>
+          <td class="muted">{{ log.detail }}</td>
+        </tr>
+        {% else %}
+        <tr><td colspan="7" class="muted">{{ _('no_data') }}</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div class="mt">
+    <button class="btn btn-sm btn-danger" type="submit">{{ _('batch_delete') }}</button>
+  </div>
+  </form>
+
+  <div class="pagination mt">
+    <span class="muted">{{ _('total_count') }} {{ total }}</span>
+    <span class="muted">{{ _('per_page') }}:</span>
+    {% for n in per_page_choices %}
+    {% if n == per_page %}<span class="badge ok">{{ n }}</span>
+    {% else %}<a href="{{ url_for('admin.audit_page', page=1, per_page=n,
+                                  username=f_username, action=f_action) }}">{{ n }}</a>{% endif %}
+    {% endfor %}
+    <span class="sep"></span>
+    {% if page > 1 %}
+    <a href="{{ url_for('admin.audit_page', page=page-1, per_page=per_page,
+                        username=f_username, action=f_action) }}">{{ _('prev_page') }}</a>
+    {% endif %}
+    <span class="muted">{{ page }} / {{ pages }}</span>
+    {% if page < pages %}
+    <a href="{{ url_for('admin.audit_page', page=page+1, per_page=per_page,
+                        username=f_username, action=f_action) }}">{{ _('next_page') }}</a>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,89 @@
+# GEO-Optimizer 一体化编排：Web 平台 + MCP 服务端（可选）+ MySQL 8.4。
+# 默认端口：Web 5000、MCP 8000、MySQL 宿主侧 3307。
+# 生产部署前务必修改 GEO_SECRET_KEY、数据库与管理员口令，并配置 LLM API Key。
+services:
+
+  geo-web:
+    build: .
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+    environment:
+      GEO_SECRET_KEY: geo-optimizer-secret-change-me
+      # 指向编排内的 mysql 服务
+      GEO_DB_HOST: mysql
+      GEO_DB_PORT: 3306
+      GEO_DB_USER: geo
+      GEO_DB_PASSWORD: geo-optimizer-db-password
+      GEO_DB_NAME: geo-op
+      # 首次启动自动创建的管理员账号（幂等，已存在则跳过）
+      GEO_ADMIN_USERNAME: admin
+      GEO_ADMIN_PASSWORD: change-me-admin-password
+      # 阿里云百炼 / Token Plan 的 LLM API Key（也可登录后在管理后台配置）
+      DASHSCOPE_API_KEY: ""
+      # Google Tag Manager 容器 ID（不用埋点可保持占位）
+      GEO_GTM_CONTAINER: GTM-XXXXXXX
+    # 先幂等初始化（建库建表 + 种子），再启动平台
+    command:
+      - sh
+      - -c
+      - "python deployment/init_platform.py && python -m geo_optimizer.web.app --host 0.0.0.0 --port 5000"
+    volumes:
+      - ./data:/app/data
+      - ./logs:/app/logs
+    healthcheck:
+      test: ["CMD", "python", "-c", "import sys,urllib.request; sys.exit(0 if urllib.request.urlopen('http://localhost:5000/', timeout=5).status == 200 else 1)"]
+      interval: 30s
+      timeout: 5s
+      start_period: 30s
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+  geo-mcp:
+    build: .
+    restart: unless-stopped
+    # 可选组件，按需启用：docker compose --profile mcp up -d
+    profiles: ["mcp"]
+    ports:
+      - "8000:8000"
+    environment:
+      # 容器内需绑定 0.0.0.0 才能被外部访问（默认 127.0.0.1）
+      GEO_MCP_HOST: 0.0.0.0
+      GEO_MCP_PORT: 8000
+      # 平台开放 API 地址（编排内走服务名）
+      GEO_BASE_URL: http://geo-web:5000
+      # 访问开放 API 的密钥（管理后台生成；亦可由客户端每次请求自带，此处留空）
+      GEO_API_KEY: ""
+      # 跨容器经服务名访问时需放行对应 Host 头（DNS rebinding 防护，回环白名单默认保留）
+      GEO_MCP_ALLOWED_HOSTS: "geo-mcp:*"
+    command: ["python", "-m", "mcp_server"]
+    depends_on:
+      geo-web:
+        condition: service_started
+
+  mysql:
+    image: mysql:8.4
+    restart: unless-stopped
+    ports:
+      - "3307:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: geo-optimizer-root
+      # 与 geo-web 的 GEO_DB_* 保持一致；MYSQL_DATABASE 会在首次启动时自动建库
+      MYSQL_DATABASE: geo-op
+      MYSQL_USER: geo
+      MYSQL_PASSWORD: geo-optimizer-db-password
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+    volumes:
+      - mysql-data:/var/lib/mysql
+    healthcheck:
+      # 用 127.0.0.1 强制走 TCP，避免临时初始化实例经 socket 响应导致误判就绪
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-pgeo-optimizer-root"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+volumes:
+  mysql-data:

@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="{{ current_locale }}">
+<head>
+  <meta charset="UTF-8">
+  {% include "gtm_head.html" %}
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}{{ _('app_name') }}{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
+</head>
+<body>
+  {% include "gtm_body.html" %}
+  <nav class="navbar">
+    <span class="brand">{{ _('app_name') }}<small>{{ _('brand_sub') }}</small></span>
+    <div class="nav-links">
+      <a href="{{ url_for('main.dashboard') }}">{{ _('dashboard') }}</a>
+      {% if current_user.is_authenticated %}
+        <a href="{{ url_for('main.guide') }}">{{ _('nav_guide') }}</a>
+      {% endif %}
+      {% if current_user.is_authenticated and not current_user.is_admin %}
+        <a href="{{ url_for('user.eval_new') }}">{{ _('nav_new_eval') }}</a>
+        <a href="{{ url_for('user.history') }}">{{ _('nav_history') }}</a>
+        <a href="{{ url_for('user.llm_config') }}">{{ _('nav_llm_config') }}</a>
+        <a href="{{ url_for('user.api_keys') }}">{{ _('nav_api_keys') }}</a>
+        <a href="{{ url_for('main.api_docs') }}">{{ _('nav_api_docs') }}</a>
+      {% endif %}
+      {% if current_user.is_authenticated and current_user.is_admin %}
+        <a href="{{ url_for('admin.users') }}">{{ _('nav_users') }}</a>
+        <a href="{{ url_for('admin.config') }}">{{ _('nav_sys_config') }}</a>
+        <a href="{{ url_for('admin.user_llm_configs') }}">{{ _('nav_user_llm') }}</a>
+        <a href="{{ url_for('admin.sites') }}">{{ _('nav_sites') }}</a>
+        <a href="{{ url_for('admin.artifacts') }}">{{ _('nav_artifacts') }}</a>
+        <a href="{{ url_for('admin.audit_page') }}">{{ _('nav_audit') }}</a>
+        <a href="{{ url_for('user.api_keys') }}">{{ _('nav_api_keys') }}</a>
+        <a href="{{ url_for('main.api_docs') }}">{{ _('nav_api_docs') }}</a>
+      {% endif %}
+    </div>
+    <div class="nav-right">
+      <span class="lang">
+        <a href="{{ url_for('main.switch_lang', code='zh') }}"
+           class="{{ 'on' if current_locale == 'zh' else '' }}">中文</a>
+        <a href="{{ url_for('main.switch_lang', code='en') }}"
+           class="{{ 'on' if current_locale == 'en' else '' }}">EN</a>
+      </span>
+      {% if current_user.is_authenticated %}
+        <span class="whoami">{{ current_user.username }}</span>
+        <form action="{{ url_for('auth.logout') }}" method="post" style="display:inline">
+          <button class="btn btn-sm btn-ghost" type="submit">{{ _('logout') }}</button>
+        </form>
+      {% endif %}
+    </div>
+  </nav>
+
+  <div class="container">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% for category, message in messages %}
+        <div class="flash {{ category }}">{{ message }}</div>
+      {% endfor %}
+    {% endwith %}
+    {% block content %}{% endblock %}
+  </div>
+
+  <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>

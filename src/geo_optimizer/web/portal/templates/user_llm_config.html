@@ -1,0 +1,252 @@
+{% extends "base.html" %}
+{% block content %}
+<h2 class="page-title">{{ _('llm_cfg_title') }}</h2>
+<p class="muted">{{ _('llm_cfg_desc') }}</p>
+
+{% if not current_user.can_use_platform_llm and not configs %}
+<div class="flash error">{{ _('llm_cfg_no_platform') }}</div>
+{% endif %}
+
+<div class="flash warn" style="background:#fffbeb;border-color:#f59e0b;">
+  ⚠️ {{ _('llm_cfg_no_resource_warn') }}
+  <a href="{{ url_for('main.llm_setup_guide') }}" style="margin-left:8px;font-weight:600;">{{ _('llm_cfg_view_guide') }} →</a>
+</div>
+
+{% if test_detail %}
+<!-- 调用测试过程明细 -->
+{% if test_detail.ok %}
+<div class="card" style="border-left:4px solid #16a34a;">
+{% else %}
+<div class="card" style="border-left:4px solid #dc2626;">
+{% endif %}
+  <h3 style="margin-bottom:4px;">
+    {{ '✅' if test_detail.ok else '❌' }} {{ _('llm_cfg_test_process') }}
+    — <span class="badge {{ 'ok' if test_detail.ok else 'muted' }}">{{ test_detail.provider_label }}</span>
+    {% if test_detail.ok %}
+    <span class="badge ok">{{ test_detail.model_responded or test_detail.model_requested }}</span>
+    {% endif %}
+  </h3>
+  {% if test_detail.config_name %}
+  <p class="muted" style="margin-top:0;">{{ _('llm_cfg_name') }}: {{ test_detail.config_name }} · API Key: <code>{{ test_detail.api_key_masked }}</code></p>
+  {% endif %}
+  <ol style="line-height:2;margin:8px 0 0 0;">
+    <li>{{ _('llm_cfg_test_step_init') }} — {{ _('llm_cfg_test_endpoint') }}: <code>{{ test_detail.endpoint }}</code></li>
+    <li>{{ _('llm_cfg_test_step_send') }} — {{ _('llm_cfg_test_model_req') }}: <code>{{ test_detail.model_requested }}</code>，messages: <code>[{"role":"user","content":"Hi"}]</code>，max_tokens: <code>5</code></li>
+    {% if test_detail.ok %}
+    <li>{{ _('llm_cfg_test_step_recv') }} — {{ _('llm_cfg_test_elapsed') }}: <code>{{ test_detail.elapsed_ms }} ms</code>
+      {% if test_detail.model_responded %}· {{ _('llm_cfg_test_model_resp') }}: <code>{{ test_detail.model_responded }}</code>{% endif %}
+      {% if test_detail.usage %}· {{ _('llm_cfg_test_usage') }}: <code>prompt {{ test_detail.usage.prompt }} + completion {{ test_detail.usage.completion }} = {{ test_detail.usage.total }}</code>{% endif %}
+    </li>
+    <li>{{ _('llm_cfg_test_reply') }}: <code>{{ test_detail.reply or '-' }}</code></li>
+    {% else %}
+    <li>{{ _('llm_cfg_test_step_err') }} — {{ _('llm_cfg_test_elapsed') }}: <code>{{ test_detail.elapsed_ms }} ms</code></li>
+    <li>{{ _('llm_cfg_test_error') }}: <code style="color:#dc2626;">{{ test_detail.error }}</code></li>
+    {% endif %}
+  </ol>
+</div>
+{% endif %}
+
+<!-- 新建/编辑表单 -->
+<div class="card">
+  <h3>{{ _('llm_cfg_add') }}</h3>
+  <form method="post" action="{{ url_for('user.llm_config_save') }}" class="stack-form">
+    <input type="hidden" name="id" value="" id="cfg_id">
+    <div class="form-row">
+      <label>{{ _('llm_cfg_provider') }}</label>
+      <select name="provider" id="cfg_provider" onchange="autoFillUrl()">
+        {% for key in provider_keys %}
+        <option value="{{ key }}">{{ providers[key].label }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="form-row">
+      <label>{{ _('llm_cfg_name') }}</label>
+      <input type="text" name="name" id="cfg_name" placeholder="{{ _('llm_cfg_name_ph') }}" maxlength="64">
+    </div>
+    <div class="form-row">
+      <label>API Key *</label>
+      <input type="password" name="api_key" id="cfg_api_key" placeholder="sk-..." required>
+    </div>
+    <div class="form-row">
+      <label>Base URL</label>
+      <input type="text" name="base_url" id="cfg_base_url" placeholder="https://...">
+      <small class="muted">{{ _('llm_cfg_url_hint') }}</small>
+    </div>
+    <div class="form-row">
+      <label>{{ _('model') }}</label>
+      <input type="text" name="model" id="cfg_model" placeholder="qwen-plus">
+    </div>
+    <button class="btn" type="submit">{{ _('save') }}</button>
+  </form>
+</div>
+
+<!-- 配置列表 -->
+<div class="card">
+  <h3>{{ _('llm_cfg_list') }}</h3>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>{{ _('llm_cfg_provider') }}</th>
+          <th>{{ _('llm_cfg_name') }}</th>
+          <th>API Key</th>
+          <th>Base URL</th>
+          <th>{{ _('model') }}</th>
+          <th>{{ _('status') }}</th>
+          <th>{{ _('actions') }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for cfg in configs %}
+        <tr>
+          <td><span class="badge {{ 'ok' if cfg.is_active else 'muted' }}">{{ cfg.provider_label }}</span></td>
+          <td>{{ cfg.name or '-' }}</td>
+          <td>
+            <code id="key-{{ cfg.id }}" data-masked="{{ cfg.api_key_masked }}">{{ cfg.api_key_masked }}</code>
+            <button type="button" class="btn btn-sm" id="key-btn-{{ cfg.id }}"
+                    onclick="toggleKey({{ cfg.id }})">{{ _('llm_cfg_show_key') }}</button>
+          </td>
+          <td class="td-url">{{ cfg.base_url or '-' }}</td>
+          <td>{{ cfg.model or 'qwen-plus' }}</td>
+          <td>
+            {% if cfg.is_active %}
+              <span class="badge ok">{{ _('llm_cfg_active') }}</span>
+            {% else %}
+              <span class="badge muted">{{ _('llm_cfg_inactive') }}</span>
+            {% endif %}
+          </td>
+          <td class="td-actions">
+            {% if not cfg.is_active %}
+            <form method="post" action="{{ url_for('user.llm_config_activate', config_id=cfg.id) }}" style="display:inline">
+              <button class="btn btn-sm" type="submit">{{ _('llm_cfg_set_active') }}</button>
+            </form>
+            {% endif %}
+            <form method="post" action="{{ url_for('user.llm_config_test', config_id=cfg.id) }}" style="display:inline"
+                  class="llm-test-form">
+              <button class="btn btn-sm" type="submit">{{ _('llm_cfg_test') }}</button>
+            </form>
+            <form method="post" action="{{ url_for('user.llm_config_delete', config_id=cfg.id) }}" style="display:inline"
+                  onsubmit="return confirm('{{ _('confirm_delete') }}')">
+              <button class="btn btn-sm btn-danger" type="submit">{{ _('delete') }}</button>
+            </form>
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="7" class="muted">{{ _('no_data') }}</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- 调用测试结果浮层 -->
+<div id="test-modal" class="modal-mask" style="display:none;">
+  <div class="modal-box">
+    <div id="test-modal-body"></div>
+    <div style="text-align:right;margin-top:12px;">
+      <button class="btn btn-sm" type="button" onclick="closeTestModal()">{{ _('close') }}</button>
+    </div>
+  </div>
+</div>
+<style>
+.modal-mask{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:1000;align-items:center;justify-content:center;}
+.modal-box{background:#fff;border-radius:10px;max-width:680px;width:92%;max-height:80vh;overflow:auto;padding:20px 24px;box-shadow:0 10px 40px rgba(0,0,0,.25);}
+.modal-box ol{line-height:2;margin:8px 0 0 0;}
+</style>
+
+<script>
+var PRESETS = {
+  {% for key in provider_keys %}
+  "{{ key }}": "{{ providers[key].openai_base_url }}"{% if not loop.last %},{% endif %}
+  {% endfor %}
+};
+function autoFillUrl() {
+  var p = document.getElementById('cfg_provider').value;
+  var urlInput = document.getElementById('cfg_base_url');
+  if (PRESETS[p]) { urlInput.value = PRESETS[p]; }
+  else { urlInput.value = ''; }
+}
+// 页面加载时自动填充
+autoFillUrl();
+
+/* 明文密钥显示/隐藏切换（明文按需从后端获取，不预埋在页面中） */
+function toggleKey(cfgId) {
+  var code = document.getElementById('key-' + cfgId);
+  var btn = document.getElementById('key-btn-' + cfgId);
+  if (btn.dataset.shown === '1') {
+    code.textContent = code.dataset.masked;
+    btn.dataset.shown = '0';
+    btn.textContent = '{{ _("llm_cfg_show_key") }}';
+    return;
+  }
+  fetch('/llm-config/' + cfgId + '/key')
+    .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
+    .then(function (data) {
+      code.textContent = data.api_key;
+      btn.dataset.shown = '1';
+      btn.textContent = '{{ _("llm_cfg_hide_key") }}';
+    })
+    .catch(function () { alert('{{ _("llm_cfg_show_key_fail") }}'); });
+}
+
+/* ---- 调用测试：fetch 提交，结果弹出浮层展示 ---- */
+function esc(s) {
+  var d = document.createElement('div');
+  d.textContent = (s === null || s === undefined) ? '' : String(s);
+  return d.innerHTML;
+}
+function closeTestModal() {
+  document.getElementById('test-modal').style.display = 'none';
+}
+function showTestModal(d) {
+  var color = d.ok ? '#16a34a' : '#dc2626';
+  var model = d.model_responded || d.model_requested;
+  var html = '<h3 style="margin:0 0 4px 0;border-left:4px solid ' + color + ';padding-left:10px;">'
+    + (d.ok ? '✅ ' : '❌ ') + '{{ _("llm_cfg_test_process") }}'
+    + ' — <span class="badge ' + (d.ok ? 'ok' : 'muted') + '">' + esc(d.provider_label) + '</span>'
+    + (d.ok ? ' <span class="badge ok">' + esc(model) + '</span>' : '')
+    + '</h3>';
+  if (d.config_name) {
+    html += '<p class="muted" style="margin-top:0;">{{ _("llm_cfg_name") }}: ' + esc(d.config_name)
+      + ' · API Key: <code>' + esc(d.api_key_masked) + '</code></p>';
+  }
+  html += '<ol>'
+    + '<li>{{ _("llm_cfg_test_step_init") }} — {{ _("llm_cfg_test_endpoint") }}: <code>' + esc(d.endpoint) + '</code></li>'
+    + '<li>{{ _("llm_cfg_test_step_send") }} — {{ _("llm_cfg_test_model_req") }}: <code>' + esc(d.model_requested)
+    + '</code>，messages: <code>[{"role":"user","content":"Hi"}]</code>，max_tokens: <code>5</code></li>';
+  if (d.ok) {
+    html += '<li>{{ _("llm_cfg_test_step_recv") }} — {{ _("llm_cfg_test_elapsed") }}: <code>' + esc(d.elapsed_ms) + ' ms</code>'
+      + (d.model_responded ? ' · {{ _("llm_cfg_test_model_resp") }}: <code>' + esc(d.model_responded) + '</code>' : '')
+      + (d.usage ? ' · {{ _("llm_cfg_test_usage") }}: <code>prompt ' + esc(d.usage.prompt)
+          + ' + completion ' + esc(d.usage.completion) + ' = ' + esc(d.usage.total) + '</code>' : '')
+      + '</li>'
+      + '<li>{{ _("llm_cfg_test_reply") }}: <code>' + esc(d.reply || '-') + '</code></li>';
+  } else {
+    html += '<li>{{ _("llm_cfg_test_step_err") }} — {{ _("llm_cfg_test_elapsed") }}: <code>' + esc(d.elapsed_ms) + ' ms</code></li>'
+      + '<li>{{ _("llm_cfg_test_error") }}: <code style="color:#dc2626;">' + esc(d.error) + '</code></li>';
+  }
+  html += '</ol>';
+  document.getElementById('test-modal-body').innerHTML = html;
+  document.getElementById('test-modal').style.display = 'flex';
+}
+// 拦截测试表单提交，改走 fetch（无 JS 时回退到原重定向流程）
+document.querySelectorAll('.llm-test-form').forEach(function (form) {
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
+    var btn = form.querySelector('button');
+    var oldText = btn.textContent;
+    btn.disabled = true;
+    btn.textContent = '{{ _("llm_cfg_testing") }}';
+    fetch(form.action, { method: 'POST', headers: { 'X-Requested-With': 'fetch' } })
+      .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
+      .then(showTestModal)
+      .catch(function () { alert('{{ _("llm_cfg_test_fail") }}'); })
+      .finally(function () { btn.disabled = false; btn.textContent = oldText; });
+  });
+});
+// 点击遮罩关闭浮层
+document.getElementById('test-modal').addEventListener('click', function (e) {
+  if (e.target === this) closeTestModal();
+});
+</script>
+{% endblock %}

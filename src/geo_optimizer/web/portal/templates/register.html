@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="{{ current_locale }}">
+<head>
+  <meta charset="UTF-8">
+  {% include "gtm_head.html" %}
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ _('register_title') }}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
+</head>
+<body>
+  {% include "gtm_body.html" %}
+  <div class="login-wrap">
+    <div class="login-card">
+      <div class="auth-brand">
+        <span class="auth-logo">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+               stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="12" cy="12" r="10"></circle>
+            <path d="M2 12h20"></path>
+            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+          </svg>
+        </span>
+        <div>
+          <h1>{{ _('app_name') }}</h1>
+          <p class="sub">{{ _('register_title') }}</p>
+        </div>
+      </div>
+
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% for category, message in messages %}
+          <div class="flash {{ category }}">{{ message }}</div>
+        {% endfor %}
+      {% endwith %}
+
+      <form method="post">
+        <div class="form-row">
+          <label for="username">{{ _('username') }}</label>
+          <input type="text" id="username" name="username" required autofocus
+                 maxlength="64" autocomplete="username" value="{{ form.username }}">
+        </div>
+        <div class="form-row">
+          <label for="password">{{ _('password') }}</label>
+          <div class="pwd-field">
+            <input type="password" id="password" name="password" required
+                   autocomplete="new-password">
+            <button type="button" class="pwd-toggle" title="{{ _('pwd_show') }}"
+                    aria-label="{{ _('pwd_show') }}" onclick="togglePwd('password', this)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                   stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path class="eye" d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                <circle class="eye" cx="12" cy="12" r="3"></circle>
+                <line class="eye-slash" x1="4" y1="4" x2="20" y2="20" style="display:none"></line>
+              </svg>
+            </button>
+          </div>
+        </div>
+        <div class="form-row">
+          <label for="password2">{{ _('password_confirm') }}</label>
+          <div class="pwd-field">
+            <input type="password" id="password2" name="password2" required
+                   autocomplete="new-password">
+            <button type="button" class="pwd-toggle" title="{{ _('pwd_show') }}"
+                    aria-label="{{ _('pwd_show') }}" onclick="togglePwd('password2', this)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                   stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path class="eye" d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                <circle class="eye" cx="12" cy="12" r="3"></circle>
+                <line class="eye-slash" x1="4" y1="4" x2="20" y2="20" style="display:none"></line>
+              </svg>
+            </button>
+          </div>
+        </div>
+        <div class="form-row">
+          <label for="email">{{ _('email') }}</label>
+          <input type="email" id="email" name="email" required maxlength="128"
+                 autocomplete="email" value="{{ form.email }}">
+        </div>
+        <div class="form-row">
+          <label for="phone">{{ _('phone') }}</label>
+          <input type="tel" id="phone" name="phone" required maxlength="32"
+                 autocomplete="tel" value="{{ form.phone }}">
+        </div>
+        <button class="btn btn-auth" type="submit">{{ _('register') }}</button>
+      </form>
+      <p class="auth-hint">{{ _('register_hint') }}</p>
+
+      <div class="login-lang">
+        <a href="{{ url_for('auth.login') }}">{{ _('back_to_login') }}</a>
+        <span class="sep">·</span>
+        <a href="{{ url_for('main.index') }}">{{ _('back_to_home') }}</a>
+        <span class="sep">·</span>
+        <a href="{{ url_for('main.switch_lang', code='zh') }}"
+           class="{{ 'on' if current_locale == 'zh' else '' }}">中文</a>
+        <span class="sep">·</span>
+        <a href="{{ url_for('main.switch_lang', code='en') }}"
+           class="{{ 'on' if current_locale == 'en' else '' }}">English</a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // 密码明文查看切换（眼睛图标 + 无障碍标签）
+    var PWD_SHOW = "{{ _('pwd_show') }}";
+    var PWD_HIDE = "{{ _('pwd_hide') }}";
+    function togglePwd(id, btn) {
+      var input = document.getElementById(id);
+      var show = input.type === "password";
+      input.type = show ? "text" : "password";
+      btn.title = show ? PWD_HIDE : PWD_SHOW;
+      btn.setAttribute("aria-label", btn.title);
+      btn.querySelector(".eye-slash").style.display = show ? "" : "none";
+    }
+  </script>
+</body>
+</html>

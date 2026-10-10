@@ -1,0 +1,13 @@
+{# Google Tag Manager 容器：容器 ID 由配置项 GTM_CONTAINER 注入
+   （环境变量 GEO_GTM_CONTAINER 或 deployment/settings.py），GA4 衡量 ID 由容器内标签投放，
+   页面不硬编码任何衡量 ID，避免双重计数。默认占位值 GTM-XXXXXXX 不会命中真实容器。
+   标准同步 snippet，自带 gtm.start push；若改为动态/延迟注入必须手工补该 push。 #}
+{% if GTM_CONTAINER %}
+<!-- Google Tag Manager -->
+<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+})(window,document,'script','dataLayer','{{ GTM_CONTAINER }}');</script>
+<!-- End Google Tag Manager -->
+{% endif %}

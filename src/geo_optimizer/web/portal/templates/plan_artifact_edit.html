@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block content %}
+<h2 class="page-title">{{ spec.title.get(current_locale, artifact.filename) if spec.title else artifact.filename }}</h2>
+
+<div class="card">
+  <p>
+    <span class="badge muted">{{ artifact.filename }}</span>
+    <span class="badge muted">{{ _('source_' + artifact.source) }}</span>
+    <span class="muted">{{ _('updated_at') }}:
+      {{ artifact.updated_at | localtime }}</span>
+  </p>
+
+  <form method="post">
+    <textarea name="content" class="editor" rows="24" spellcheck="false">{{ artifact.content }}</textarea>
+    <div class="mt">
+      <button class="btn" type="submit">{{ _('save') }}</button>
+      <a class="btn btn-ghost" href="{{ url_for('plan.artifact_download', artifact_id=artifact.id) }}">
+        {{ _('artifact_download') }}</a>
+      <a class="btn btn-ghost" href="{{ url_for('plan.item_edit', item_id=item.id) }}">
+        {{ _('back_to_item') }}</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

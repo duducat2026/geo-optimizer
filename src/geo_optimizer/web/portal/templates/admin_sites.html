@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block content %}
+<h2 class="page-title">{{ _('sites_title') }}</h2>
+
+<div class="card">
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>{{ _('owner') }}</th>
+          <th>{{ _('target_url') }}</th>
+          <th>{{ _('task_type') }}</th>
+          <th>{{ _('status') }}</th>
+          <th>{{ _('score') }}</th>
+          <th>{{ _('created_at') }}</th>
+          <th>{{ _('actions') }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for task, username in rows %}
+        <tr>
+          <td>{{ username }}</td>
+          <td>{{ task.target_url }}</td>
+          <td>
+            {{ _('type_plan') if task.type == 'plan' else _('type_eval') }}
+            {% if task.id in plan_task_ids %}<span class="badge ok">ZIP</span>{% endif %}
+            {% if task.source == 'api' %}<span class="badge">API</span>
+            {% else %}<span class="badge">Web</span>{% endif %}
+          </td>
+          <td>
+            {% if task.status == 'completed' %}<span class="badge ok">{{ _('task_completed') }}</span>
+            {% elif task.status == 'failed' %}<span class="badge err">{{ _('task_failed') }}</span>
+            {% else %}<span class="badge warn">{{ _('generating') }}</span>{% endif %}
+          </td>
+          <td>{{ '%.1f'|format(task.overall_score) if task.overall_score else '-' }}</td>
+          <td>{{ task.created_at | localtime }}</td>
+          <td>
+            <a href="{{ url_for('user.eval_detail', task_id=task.id) }}">{{ _('view') }}</a>
+            &nbsp;
+            <form method="post" style="display:inline"
+                  action="{{ url_for('admin.site_delete', task_id=task.id, page=page, per_page=per_page) }}"
+                  data-confirm="{{ _('confirm_delete') }}">
+              <button class="btn btn-sm btn-danger" type="submit">{{ _('delete') }}</button>
+            </form>
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="7" class="muted">{{ _('no_data') }}</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <div class="pagination mt">
+    <span class="muted">{{ _('total_count') }} {{ total }}</span>
+    <span class="muted">{{ _('per_page') }}:</span>
+    {% for n in per_page_choices %}
+      {% if n == per_page %}<span class="badge ok">{{ n }}</span>
+      {% else %}<a href="{{ url_for('admin.sites', page=1, per_page=n) }}">{{ n }}</a>{% endif %}
+    {% endfor %}
+    <span class="sep"></span>
+    {% if page > 1 %}
+      <a href="{{ url_for('admin.sites', page=page-1, per_page=per_page) }}">{{ _('prev_page') }}</a>
+    {% endif %}
+    <span class="muted">{{ page }} / {{ pages }}</span>
+    {% if page < pages %}
+      <a href="{{ url_for('admin.sites', page=page+1, per_page=per_page) }}">{{ _('next_page') }}</a>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,200 @@
+{% extends "base.html" %}
+{% block content %}
+<h2 class="page-title">{{ _('users_title') }}</h2>
+
+<div class="card">
+  <div style="display:flex;justify-content:space-between;align-items:center;">
+    <span class="muted">{{ _('eval_quota') }}: {{ _('quota_hint') }} · {{ _('quota_daily_hint') }}</span>
+    <button class="btn" type="button" onclick="openUserModal()">＋ {{ _('new_user') }}</button>
+  </div>
+
+  <div class="table-wrap mt">
+    <table>
+      <thead>
+        <tr>
+          <th>{{ _('username') }}</th>
+          <th>{{ _('user_status') }}</th>
+          <th>{{ _('email') }}</th>
+          <th>{{ _('phone') }}</th>
+          <th>{{ _('role') }}</th>
+          <th>{{ _('eval_quota') }}</th>
+          <th>{{ _('eval_used') }}</th>
+          <th>{{ _('llm_cfg_platform') }}</th>
+          <th>{{ _('created_at') }}</th>
+          <th>{{ _('actions') }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for u in users %}
+        <tr>
+          <td>{{ u.username }}</td>
+          <td>
+            {% if u.status == 'pending' %}
+            <span class="badge warn">{{ _('status_pending') }}</span>
+            <form method="post" class="inline-form" style="display:inline"
+                  action="{{ url_for('admin.approve_user', user_id=u.id) }}">
+              <button class="btn btn-sm" type="submit">{{ _('approve') }}</button>
+            </form>
+            {% elif not u.is_active %}
+            <span class="badge err">{{ _('status_disabled') }}</span>
+            {% else %}
+            <span class="badge ok">{{ _('status_active') }}</span>
+            {% endif %}
+          </td>
+          <td>{{ u.email or '-' }}</td>
+          <td>{{ u.phone or '-' }}</td>
+          <td>
+            <span class="badge {{ 'ok' if u.is_admin else 'muted' }}">
+              {{ _('admin') if u.is_admin else _('user') }}</span>
+          </td>
+          <td>{{ u.eval_quota }}</td>
+          <td>{{ u.used_today }}</td>
+          <td>
+            <span class="badge {{ 'ok' if u.can_use_platform_llm else 'warn' }}">
+              {{ _('llm_cfg_platform_yes') if u.can_use_platform_llm else _('llm_cfg_platform_no') }}</span>
+          </td>
+          <td>{{ u.created_at | localtime('%Y-%m-%d') }}</td>
+          <td class="td-actions">
+            <button class="btn btn-sm" type="button"
+                    data-id="{{ u.id }}" data-username="{{ u.username }}"
+                    data-email="{{ u.email }}" data-phone="{{ u.phone }}"
+                    data-role="{{ u.role }}" data-quota="{{ u.eval_quota }}"
+                    data-platform="{{ 1 if u.can_use_platform_llm else 0 }}"
+                    onclick="openUserModal(this)">{{ _('edit_item') }}</button>
+            {% if u.id != current_user.id %}
+            <form method="post" style="display:inline"
+                  action="{{ url_for('admin.toggle_user_active', user_id=u.id, page=page, per_page=per_page) }}">
+              <button class="btn btn-sm" type="submit">
+                {{ _('user_disable') if u.is_active else _('user_enable') }}</button>
+            </form>
+            <form method="post" style="display:inline"
+                  action="{{ url_for('admin.delete_user', user_id=u.id, page=page, per_page=per_page) }}"
+                  data-confirm="{{ _('confirm_delete_user') }}">
+              <button class="btn btn-sm btn-danger" type="submit">{{ _('delete') }}</button>
+            </form>
+            {% endif %}
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="10" class="muted">{{ _('no_data') }}</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <div class="pagination mt">
+    <span class="muted">{{ _('total_count') }} {{ total }}</span>
+    <span class="muted">{{ _('per_page') }}:</span>
+    {% for n in per_page_choices %}
+    {% if n == per_page %}<span class="badge ok">{{ n }}</span>
+    {% else %}<a href="{{ url_for('admin.users', page=1, per_page=n) }}">{{ n }}</a>{% endif %}
+    {% endfor %}
+    <span class="sep"></span>
+    {% if page > 1 %}
+    <a href="{{ url_for('admin.users', page=page-1, per_page=per_page) }}">{{ _('prev_page') }}</a>
+    {% endif %}
+    <span class="muted">{{ page }} / {{ pages }}</span>
+    {% if page < pages %}
+    <a href="{{ url_for('admin.users', page=page+1, per_page=per_page) }}">{{ _('next_page') }}</a>
+    {% endif %}
+  </div>
+</div>
+
+<!-- 新建 / 编辑用户浮层 -->
+<div id="user-modal" class="modal-mask" style="display:none;">
+  <div class="modal-box">
+    <h3 id="user-modal-title">{{ _('new_user') }}</h3>
+    <form method="post" id="user-modal-form"
+          action="{{ url_for('admin.users', page=page, per_page=per_page) }}">
+      <input type="hidden" name="user_id" id="um-user-id" value="">
+      <div class="form-row">
+        <label>{{ _('username') }}</label>
+        <input type="text" name="username" id="um-username" required>
+      </div>
+      <div class="form-row">
+        <label>{{ _('password') }}</label>
+        <input type="password" name="password" id="um-password" autocomplete="new-password">
+        <p class="muted" id="um-password-hint" style="display:none;margin:4px 0 0;">
+          {{ _('password_keep_hint') }}</p>
+      </div>
+      <div class="form-row">
+        <label>{{ _('email') }}</label>
+        <input type="email" name="email" id="um-email">
+      </div>
+      <div class="form-row">
+        <label>{{ _('phone') }}</label>
+        <input type="text" name="phone" id="um-phone">
+      </div>
+      <div class="form-row">
+        <label>{{ _('role') }}</label>
+        <select name="role" id="um-role">
+          {% for r in roles %}
+          <option value="{{ r }}">{{ _('admin') if r == 'admin' else _('user') }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="form-row">
+        <label>{{ _('eval_quota') }}（{{ _('quota_hint') }}）</label>
+        <input type="number" name="eval_quota" id="um-quota" value="10" min="0">
+      </div>
+      <div class="form-row">
+        <label class="checkbox-label" title="{{ _('llm_cfg_platform_hint') }}">
+          <input type="checkbox" name="can_use_platform_llm" id="um-platform" checked>
+          {{ _('llm_cfg_platform') }}
+        </label>
+      </div>
+      <div style="text-align:right;margin-top:16px;">
+        <button class="btn btn-secondary" type="button" onclick="closeUserModal()">{{ _('cancel') }}</button>
+        <button class="btn" type="submit" id="um-submit">{{ _('create') }}</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<style>
+.modal-mask{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:1000;align-items:center;justify-content:center;}
+.modal-box{background:#fff;border-radius:10px;max-width:520px;width:92%;max-height:85vh;overflow:auto;padding:20px 24px;box-shadow:0 10px 40px rgba(0,0,0,.25);}
+.modal-box .form-row{margin-top:10px;}
+.modal-box .form-row label{display:block;margin-bottom:4px;}
+.modal-box .form-row input[type=text],.modal-box .form-row input[type=email],
+.modal-box .form-row input[type=password],.modal-box .form-row input[type=number],
+.modal-box .form-row select{width:100%;box-sizing:border-box;}
+.td-actions form{margin-left:4px;}
+</style>
+<script>
+(function () {
+  var modal = document.getElementById('user-modal');
+
+  // btn 为空 = 新建；传入行按钮 = 编辑（data 属性回填）
+  window.openUserModal = function (btn) {
+    var editing = !!btn;
+    document.getElementById('user-modal-title').textContent =
+      editing ? '{{ _("edit_user") }}: ' + btn.dataset.username : '{{ _("new_user") }}';
+    document.getElementById('um-user-id').value = editing ? btn.dataset.id : '';
+    var nameInput = document.getElementById('um-username');
+    nameInput.value = editing ? btn.dataset.username : '';
+    nameInput.readOnly = editing;
+    nameInput.required = !editing;
+    var pwd = document.getElementById('um-password');
+    pwd.value = '';
+    pwd.required = !editing;
+    document.getElementById('um-password-hint').style.display = editing ? 'block' : 'none';
+    document.getElementById('um-email').value = editing ? btn.dataset.email : '';
+    document.getElementById('um-phone').value = editing ? btn.dataset.phone : '';
+    document.getElementById('um-role').value = editing ? btn.dataset.role : 'user';
+    document.getElementById('um-quota').value = editing ? btn.dataset.quota : '10';
+    document.getElementById('um-platform').checked = editing ? btn.dataset.platform === '1' : true;
+    document.getElementById('um-submit').textContent =
+      editing ? '{{ _("save") }}' : '{{ _("create") }}';
+    modal.style.display = 'flex';
+  };
+  window.closeUserModal = function () { modal.style.display = 'none'; };
+  modal.addEventListener('click', function (e) {
+    if (e.target === modal) closeUserModal();
+  });
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') closeUserModal();
+  });
+})();
+</script>
+{% endblock %}

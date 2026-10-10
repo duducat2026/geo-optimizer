@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="{{ current_locale }}">
+<head>
+  <meta charset="UTF-8">
+  {% include "gtm_head.html" %}
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ _('app_name') }} — {{ _('brand_sub') }}</title>
+  <meta name="description" content="{{ _('land_hero_sub') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/landing.css') }}">
+</head>
+<body>
+  {% include "gtm_body.html" %}
+  <div class="bg-layer" aria-hidden="true"></div>
+
+  <!-- ── 顶部导航 ── -->
+  <header class="topnav" id="topnav">
+    <a class="brand" href="#top">
+      <span class="brand-glyph" aria-hidden="true"></span>
+      {{ _('app_name') }}<small>GEO</small>
+    </a>
+    <nav class="topnav-links">
+      <a href="#pipeline">{{ _('land_nav_pipeline') }}</a>
+      <a href="#features">{{ _('land_nav_features') }}</a>
+      <a href="#api">{{ _('land_nav_api') }}</a>
+      <a href="#resources">{{ _('land_nav_resources') }}</a>
+      <a href="#faq">{{ _('land_nav_faq') }}</a>
+    </nav>
+    <div class="topnav-right">
+      <span class="lang-switch">
+        <a href="{{ url_for('main.switch_lang', code='zh') }}"
+           class="{{ 'on' if current_locale == 'zh' else '' }}">中文</a>
+        <a href="{{ url_for('main.switch_lang', code='en') }}"
+           class="{{ 'on' if current_locale == 'en' else '' }}">EN</a>
+      </span>
+      <a class="btn-register" href="{{ url_for('auth.register') }}">{{ _('register') }}</a>
+      <a class="btn-login" href="{{ url_for('auth.login') }}">{{ _('login') }}</a>
+    </div>
+  </header>
+
+  <main id="top">
+    <!-- ── Hero：左文案 + 右扫描控制台 ── -->
+    <section class="hero">
+      <div class="hero-copy">
+        <p class="kicker">GENERATIVE ENGINE OPTIMIZATION</p>
+        <h1>{{ _('land_hero_1') }}<br><em>{{ _('land_hero_2') }}</em></h1>
+        <p class="lede">{{ _('land_hero_sub') }}</p>
+        <div class="hero-cta">
+          <a class="btn-solid" href="{{ url_for('auth.login') }}">
+            {{ _('land_cta_login') }} <span class="arr">→</span>
+          </a>
+          <a class="btn-line" href="#faq">{{ _('land_cta_faq') }}</a>
+        </div>
+        <ul class="hero-meta">
+          <li><b>10<i>+</i></b>{{ _('land_meta_engines') }}</li>
+          <li><b>20<i>+</i></b>{{ _('land_meta_audit') }}</li>
+          <li><b>6</b>{{ _('land_meta_export') }}</li>
+        </ul>
+      </div>
+
+      <div class="hero-console" aria-hidden="true">
+        <div class="radar"></div>
+        <div class="console-win">
+          <div class="console-bar"><i></i><i></i><i></i><span>geo-analyzer — session</span></div>
+          <div class="console-body">
+            <div class="cl cmd"><span class="prompt">$</span><span class="txt">geo analyze https://your-site.com --plan</span></div>
+            <div class="cl"><span class="tag ok">[✓]</span><span class="txt">{{ _('land_scan_crawl') }}</span><span class="dots"></span><span class="val">1.2s</span></div>
+            <div class="cl"><span class="tag ok">[✓]</span><span class="txt">{{ _('land_scan_parse') }}</span><span class="dots"></span><span class="val">JSON-LD ✓</span></div>
+            <div class="cl"><span class="tag run">[•]</span><span class="txt">{{ _('land_scan_scoring') }}</span></div>
+            <div class="score-line"><span class="eng">ChatGPT</span><span class="bar"><i style="--w:82%"></i></span><span class="num">82</span></div>
+            <div class="score-line"><span class="eng">Claude</span><span class="bar"><i style="--w:74%"></i></span><span class="num">74</span></div>
+            <div class="score-line"><span class="eng">Perplexity</span><span class="bar"><i style="--w:88%"></i></span><span class="num">88</span></div>
+            <div class="score-line"><span class="eng">Kimi</span><span class="bar"><i class="warm" style="--w:63%"></i></span><span class="num">63</span></div>
+            <div class="cl"><span class="tag ok">[✓]</span><span class="txt">{{ _('land_scan_audit') }}</span><span class="dots"></span><span class="val">17 / 3</span></div>
+            <div class="cl"><span class="tag ok">[→]</span><span class="txt">{{ _('land_scan_done') }}</span><span class="cursor"></span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── 引擎跑马灯 ── -->
+    <div class="engine-strip" aria-hidden="true">
+      <div class="marquee">
+        <span>
+          {% for e in engines %}<b>{{ e }}</b><em>◆</em>{% endfor %}
+          {% for e in engines %}<b>{{ e }}</b><em>◆</em>{% endfor %}
+        </span>
+      </div>
+    </div>
+
+    <!-- ── 全链路 ── -->
+    <section class="section" id="pipeline">
+      <div class="sec-head reveal">
+        <span class="sec-tag">// PIPELINE</span>
+        <h2>{{ _('land_pipeline_title') }}</h2>
+        <p>{{ _('land_pipeline_sub') }}</p>
+      </div>
+      <ol class="pipe reveal">
+        <li><span class="node"></span><h3>{{ _('land_step1_t') }}</h3><p>{{ _('land_step1_d') }}</p></li>
+        <li><span class="node"></span><h3>{{ _('land_step2_t') }}</h3><p>{{ _('land_step2_d') }}</p></li>
+        <li><span class="node"></span><h3>{{ _('land_step3_t') }}</h3><p>{{ _('land_step3_d') }}</p></li>
+        <li><span class="node"></span><h3>{{ _('land_step4_t') }}</h3><p>{{ _('land_step4_d') }}</p></li>
+        <li><span class="node"></span><h3>{{ _('land_step5_t') }}</h3><p>{{ _('land_step5_d') }}</p></li>
+      </ol>
+    </section>
+
+    <!-- ── 核心能力 Bento ── -->
+    <section class="section" id="features">
+      <div class="sec-head reveal">
+        <span class="sec-tag">// CAPABILITIES</span>
+        <h2>{{ _('land_features_title') }}</h2>
+        <p>{{ _('land_features_sub') }}</p>
+      </div>
+      <div class="bento">
+        <article class="cell cell-score reveal">
+          <span class="tag">MULTI-ENGINE SCORING</span>
+          <h3>{{ _('land_feat_score_t') }}</h3>
+          <p>{{ _('land_feat_score_d') }}</p>
+          <div class="demo-scores">
+            <div class="demo-row"><span class="eng">ChatGPT</span><span class="track"><i style="--w:82%"></i></span><span class="num">82</span></div>
+            <div class="demo-row"><span class="eng">Claude</span><span class="track"><i style="--w:74%"></i></span><span class="num">74</span></div>
+            <div class="demo-row"><span class="eng">Perplexity</span><span class="track"><i style="--w:88%"></i></span><span class="num">88</span></div>
+            <div class="demo-row"><span class="eng">Gemini</span><span class="track"><i style="--w:79%"></i></span><span class="num">79</span></div>
+            <div class="demo-row"><span class="eng">Kimi</span><span class="track"><i class="warm" style="--w:63%"></i></span><span class="num">63</span></div>
+            <div class="demo-row"><span class="eng">{{ _('land_feat_doubao') }}</span><span class="track"><i class="warm" style="--w:58%"></i></span><span class="num">58</span></div>
+          </div>
+          <div class="demo-overall"><b>76</b><span>{{ _('land_feat_overall') }}</span></div>
+        </article>
+
+        <article class="cell cell-audit reveal">
+          <span class="tag">PAGE AUDIT</span>
+          <h3>{{ _('land_feat_audit_t') }}</h3>
+          <p>{{ _('land_feat_audit_d') }}</p>
+          <ul class="check-list">
+            <li><span class="st pass">✓</span>HTTPS</li>
+            <li><span class="st pass">✓</span>JSON-LD</li>
+            <li><span class="st fail">!</span>FAQ</li>
+            <li><span class="st pass">✓</span>E-E-A-T</li>
+            <li><span class="st fail">!</span>img alt</li>
+          </ul>
+        </article>
+
+        <article class="cell cell-plan reveal">
+          <span class="tag">ACTION PLAN</span>
+          <h3>{{ _('land_feat_plan_t') }}</h3>
+          <p>{{ _('land_feat_plan_d') }}</p>
+          <div class="plan-chips">
+            <div class="plan-chip"><span class="prio high">P0</span>{{ _('land_feat_plan_ex1') }}</div>
+            <div class="plan-chip"><span class="prio mid">P1</span>{{ _('land_feat_plan_ex2') }}</div>
+            <div class="plan-chip"><span class="prio low">P2</span>{{ _('land_feat_plan_ex3') }}</div>
+          </div>
+        </article>
+
+        <article class="cell cell-export reveal">
+          <div class="inner">
+            <div>
+              <span class="tag">MULTI-PLATFORM EXPORT</span>
+              <h3>{{ _('land_feat_export_t') }}</h3>
+              <p>{{ _('land_feat_export_d') }}</p>
+            </div>
+            <div class="export-chips">
+              <span>{{ _('land_exp_wechat') }}</span>
+              <span>{{ _('land_exp_zhihu') }}</span>
+              <span>{{ _('land_exp_toutiao') }}</span>
+              <span>Reddit</span>
+              <span>Quora</span>
+              <span>Medium</span>
+              <span>Schema.org</span>
+              <span>sitemap.xml</span>
+              <span>robots.txt</span>
+            </div>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <!-- ── 开放 API ── -->
+    <section class="section" id="api">
+      <div class="api-grid">
+        <div class="api-copy reveal">
+          <span class="sec-tag">// OPEN API</span>
+          <h2 style="font-size:clamp(26px,3.2vw,38px);font-weight:800;margin-bottom:14px;">{{ _('land_api_title') }}</h2>
+          <p style="color:var(--muted);">{{ _('land_api_sub') }}</p>
+          <ul class="endpoints">
+            <li><span class="m post">POST</span>/api/v1/tasks</li>
+            <li><span class="m get">GET</span>/api/v1/tasks/{id}</li>
+            <li><span class="m get">GET</span>/api/v1/tasks/{id}/result</li>
+            <li><span class="m get">GET</span>/api/v1/tasks/{id}/download</li>
+            <li><span class="m get">GET</span>/api/v1/usage</li>
+          </ul>
+          <a class="btn-line" href="{{ url_for('main.api_docs') }}">{{ _('land_api_docs_btn') }} →</a>
+        </div>
+        <pre class="api-code reveal"><span class="c"># {{ _('land_api_code_c1') }}</span>
+<span class="g">$</span> curl -X POST <span class="u">https://&lt;host&gt;/api/v1/tasks</span> \
+    -H <span class="a">"Authorization: Bearer geo_xxx"</span> \
+    -d <span class="a">'{"target_url":"https://your-site.com","task_type":"plan"}'</span>
+
+<span class="c"># {{ _('land_api_code_c2') }}</span>
+<span class="g">$</span> curl <span class="u">https://&lt;host&gt;/api/v1/tasks/42/result</span> \
+    -H <span class="a">"Authorization: Bearer geo_xxx"</span></pre>
+      </div>
+    </section>
+
+    <!-- ── 资源中心 ── -->
+    <section class="section" id="resources">
+      <div class="sec-head reveal">
+        <span class="sec-tag">// RESOURCES</span>
+        <h2>{{ _('land_res_title') }}</h2>
+        <p>{{ _('land_res_sub') }}</p>
+      </div>
+      <div class="res-grid">
+        <a class="res-card reveal" href="{{ url_for('main.user_guide') }}">
+          <span class="res-icon">📖</span>
+          <h3>{{ _('land_res_guide_t') }}</h3>
+          <p>{{ _('land_res_guide_d') }}</p>
+          <span class="meta"><b>PUBLIC</b> · /user-guide</span>
+        </a>
+        <a class="res-card reveal" href="{{ url_for('main.geo_skill_index') }}">
+          <span class="res-icon">⚡</span>
+          <h3>GEO-Skill</h3>
+          <p>{{ _('land_res_skill_d') }}</p>
+          <span class="meta"><b>PUBLIC</b> · /geo-skill</span>
+        </a>
+        <a class="res-card reveal" href="{{ url_for('main.guide') }}">
+          <span class="res-icon">🛰️</span>
+          <h3>{{ _('land_res_guidebook_t') }}</h3>
+          <p>{{ _('land_res_guidebook_d') }}</p>
+          <span class="meta"><b>CONSOLE</b> · {{ _('land_res_login_hint') }}</span>
+        </a>
+      </div>
+    </section>
+
+    <!-- ── FAQ ── -->
+    <section class="section" id="faq">
+      <div class="sec-head reveal" style="margin-left:auto;margin-right:auto;text-align:center;max-width:640px;">
+        <span class="sec-tag">// FAQ</span>
+        <h2>{{ _('land_faq_title') }}</h2>
+        <p>{{ _('land_faq_sub') }}</p>
+      </div>
+      <div class="faq-wrap">
+        {% for item in faq %}
+        <details class="faq-item reveal" {% if loop.first %}open{% endif %}>
+          <summary>{{ item.q[current_locale] }}</summary>
+          <p class="ans">{{ item.a[current_locale] }}</p>
+        </details>
+        {% endfor %}
+      </div>
+    </section>
+
+    <!-- ── CTA ── -->
+    <section class="cta-band">
+      <span class="sec-tag">// GET STARTED</span>
+      <h2>{{ _('land_cta_title') }}<br><i>{{ _('land_cta_title_2') }}</i></h2>
+      <a class="btn-solid" href="{{ url_for('auth.login') }}" style="font-size:16px;padding:15px 36px;">
+        {{ _('land_cta_btn') }} <span class="arr">→</span>
+      </a>
+    </section>
+  </main>
+
+  <!-- ── Footer ── -->
+  <footer class="footer">
+    <div class="footer-inner">
+      <div class="f-brand">
+        <a class="brand" href="#top">
+          <span class="brand-glyph" aria-hidden="true"></span>
+          {{ _('app_name') }}<small>GEO</small>
+        </a>
+        <p>{{ _('land_footer_desc') }}</p>
+      </div>
+      <div class="f-col">
+        <b>RESOURCES</b>
+        <a href="{{ url_for('main.user_guide') }}">{{ _('land_res_guide_t') }}</a>
+        <a href="{{ url_for('main.geo_skill_index') }}">GEO-Skill</a>
+        <a href="{{ url_for('main.guide') }}">{{ _('land_res_guidebook_t') }}</a>
+      </div>
+      <div class="f-col">
+        <b>PLATFORM</b>
+        <a href="{{ url_for('main.api_docs') }}">{{ _('land_nav_api') }}</a>
+        <a href="{{ url_for('auth.login') }}">{{ _('login') }}</a>
+        <a href="#faq">{{ _('land_nav_faq') }}</a>
+      </div>
+      <div class="f-col">
+        <b>LANGUAGE</b>
+        <a href="{{ url_for('main.switch_lang', code='zh') }}">中文</a>
+        <a href="{{ url_for('main.switch_lang', code='en') }}">English</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>GEO OPTIMIZER · {{ _('brand_sub') }}</span>
+      <span>{{ _('land_footer_rights') }}</span>
+    </div>
+  </footer>
+
+  <script>
+    /* 导航滚动毛玻璃 */
+    (function () {
+      var nav = document.getElementById('topnav');
+      var onScroll = function () {
+        nav.classList.toggle('scrolled', window.scrollY > 24);
+      };
+      window.addEventListener('scroll', onScroll, { passive: true });
+      onScroll();
+    })();
+    /* 滚动浮现 */
+    (function () {
+      var io = new IntersectionObserver(function (entries) {
+        entries.forEach(function (e) {
+          if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); }
+        });
+      }, { threshold: 0.12 });
+      document.querySelectorAll('.reveal').forEach(function (el) { io.observe(el); });
+    })();
+  </script>
+</body>
+</html>

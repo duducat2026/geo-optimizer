@@ -1,0 +1,146 @@
+{% extends "base.html" %}
+{% block content %}
+<h2 class="page-title">{{ _('llm_guide_title') }}</h2>
+
+<!-- 重要提示 -->
+<div class="flash warn" style="background:#fffbeb;border-color:#f59e0b;line-height:1.8;">
+  <strong>⚠️ {{ _('llm_guide_notice_title') }}</strong><br>
+  {{ _('llm_guide_notice_body') }}
+</div>
+
+<!-- 方案总览 -->
+<div class="card">
+  <h3>{{ _('llm_guide_overview') }}</h3>
+  <p>{{ _('llm_guide_overview_desc') }}</p>
+  <p style="margin-top:8px;">{{ _('llm_guide_how_to_use') }}</p>
+  <table style="width:100%;font-size:13px;margin-top:12px;">
+    <thead>
+      <tr>
+        <th>{{ _('llm_provider') }}</th>
+        <th>API Key {{ _('format') }}</th>
+        <th>Base URL (OpenAI {{ _('compatible') }})</th>
+        <th>{{ _('billing') }}</th>
+        <th>{{ _('applicable') }}</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>百炼按量付费</strong></td>
+        <td><code>sk-</code> {{ _('prefix') }}</td>
+        <td><code>https://dashscope.aliyuncs.com/compatible-mode/v1</code></td>
+        <td>{{ _('billing_token') }}</td>
+        <td>{{ _('applicable_bailian') }}</td>
+      </tr>
+      <tr>
+        <td><strong>Token Plan {{ _('team') }}</strong></td>
+        <td><code>sk-sp-</code> {{ _('prefix') }}</td>
+        <td><code>https://token-plan.cn-beijing.maas.aliyuncs.com/compatible-mode/v1</code></td>
+        <td>Credits {{ _('billing_credits') }}</td>
+        <td>{{ _('applicable_token_plan') }}</td>
+      </tr>
+      <tr>
+        <td><strong>{{ _('custom') }} MaaS</strong></td>
+        <td>-</td>
+        <td>{{ _('custom_fill') }}</td>
+        <td>-</td>
+        <td>{{ _('applicable_custom') }}</td>
+      </tr>
+    </tbody>
+  </table>
+  <p class="muted" style="margin-top:12px;font-size:12px;color:#dc2626;">
+    ⚠️ {{ _('llm_provider_warning') }}
+  </p>
+</div>
+
+<!-- 配置操作步骤 -->
+<div class="card">
+  <h3>{{ _('llm_guide_user_steps_title') }}</h3>
+  <p class="muted">{{ _('llm_guide_user_steps_desc') }}</p>
+  <ol style="line-height:2.2;">
+    <li>{{ _('llm_guide_user_step1') }}</li>
+    <li>{{ _('llm_guide_user_step2') }}</li>
+    <li>{{ _('llm_guide_user_step3') }}</li>
+    <li>{{ _('llm_guide_user_step4') }}</li>
+    <li>{{ _('llm_guide_user_step5') }}</li>
+  </ol>
+  <p style="margin-top:12px;">
+    <a href="{{ url_for('user.llm_config') }}" class="btn btn-sm">{{ _('llm_guide_go_config') }} →</a>
+  </p>
+</div>
+
+<!-- 方案一：百炼按量付费 -->
+<div class="card">
+  <h3>{{ _('llm_guide_bailian_title') }}</h3>
+  <p class="muted">{{ _('llm_guide_bailian_desc') }}</p>
+  <h4>{{ _('llm_guide_steps') }}</h4>
+  <ol style="line-height:2;">
+    <li>{{ _('llm_guide_bailian_step1') }}</li>
+    <li>{{ _('llm_guide_bailian_step2') }}</li>
+    <li>{{ _('llm_guide_bailian_step3') }}</li>
+    <li>{{ _('llm_guide_bailian_step4') }}</li>
+  </ol>
+  <h4>{{ _('llm_guide_models') }}</h4>
+  <p>{{ _('llm_guide_bailian_models') }}</p>
+</div>
+
+<!-- 方案二：Token Plan 团队版 -->
+<div class="card">
+  <h3>{{ _('llm_guide_token_plan_title') }}</h3>
+  <p class="muted">{{ _('llm_guide_token_plan_desc') }}</p>
+  <h4>{{ _('llm_guide_steps') }}</h4>
+  <ol style="line-height:2;">
+    <li>{{ _('llm_guide_tp_step1') }}</li>
+    <li>{{ _('llm_guide_tp_step2') }}</li>
+    <li>{{ _('llm_guide_tp_step3') }}</li>
+    <li>{{ _('llm_guide_tp_step4') }}</li>
+    <li>{{ _('llm_guide_tp_step5') }}</li>
+  </ol>
+  <h4>{{ _('llm_guide_tp_plans') }}</h4>
+  <table style="width:100%;font-size:13px;">
+    <thead>
+      <tr><th>{{ _('llm_guide_tp_seat') }}</th><th>{{ _('llm_guide_tp_credits') }}</th><th>{{ _('llm_guide_tp_price') }}</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Standard</td><td>25,000 Credits/{{ _('monthly') }}</td><td>150 {{ _('yuan') }}/{{ _('monthly') }}</td></tr>
+      <tr><td>Pro</td><td>100,000 Credits/{{ _('monthly') }}</td><td>550 {{ _('yuan') }}/{{ _('monthly') }}</td></tr>
+      <tr><td>Max</td><td>250,000 Credits/{{ _('monthly') }}</td><td>1,398 {{ _('yuan') }}/{{ _('monthly') }}</td></tr>
+    </tbody>
+  </table>
+  <h4>{{ _('llm_guide_models') }}</h4>
+  <p>{{ _('llm_guide_tp_models') }}</p>
+  <p class="muted" style="font-size:12px;margin-top:8px;">
+    {{ _('llm_guide_tp_note') }}
+  </p>
+</div>
+
+<!-- 方案三：自定义 MaaS -->
+<div class="card">
+  <h3>{{ _('llm_guide_custom_title') }}</h3>
+  <p class="muted">{{ _('llm_guide_custom_desc') }}</p>
+  <p style="margin-top:8px;">{{ _('llm_guide_custom_user_hint') }}</p>
+</div>
+
+<!-- 常见问题 -->
+<div class="card">
+  <h3>{{ _('llm_guide_faq') }}</h3>
+  <dl style="line-height:1.8;">
+    <dt><strong>Q: {{ _('llm_guide_faq1_q') }}</strong></dt>
+    <dd>A: {{ _('llm_guide_faq1_a') }}</dd>
+    <dt style="margin-top:12px;"><strong>Q: {{ _('llm_guide_faq2_q') }}</strong></dt>
+    <dd>A: {{ _('llm_guide_faq2_a') }}</dd>
+    <dt style="margin-top:12px;"><strong>Q: {{ _('llm_guide_faq3_q') }}</strong></dt>
+    <dd>A: {{ _('llm_guide_faq3_a') }}</dd>
+    <dt style="margin-top:12px;"><strong>Q: {{ _('llm_guide_faq4_q') }}</strong></dt>
+    <dd>A: {{ _('llm_guide_faq4_a') }}</dd>
+  </dl>
+</div>
+
+<div style="margin-top:16px;">
+  <a href="https://help.aliyun.com/zh/model-studio/token-plan-overview" target="_blank" class="btn btn-sm">
+    {{ _('llm_guide_ref_token_plan') }} ↗
+  </a>
+  <a href="https://help.aliyun.com/zh/model-studio/token-plan-team-quickstart" target="_blank" class="btn btn-sm" style="margin-left:8px;">
+    {{ _('llm_guide_ref_quickstart') }} ↗
+  </a>
+</div>
+{% endblock %}

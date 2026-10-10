@@ -1,0 +1,3 @@
+# ClawHub publish ignore patterns
+# config.json holds a plaintext API key — never publish it.
+config.json

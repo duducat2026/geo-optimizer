@@ -1,0 +1,43 @@
+# ============================================================
+# GEO-Optimizer MCP 服务端 Systemd 服务（streamable-HTTP 模式）
+# 安装: cp geo-mcp.service /etc/systemd/system/geo-mcp.service
+#       systemctl daemon-reload && systemctl enable geo-mcp
+# 说明: 把平台开放 API 封装为 MCP 工具，绑定回环 127.0.0.1:8000，
+#       由 Nginx 的 location /mcp 反向代理对外（https://域名/mcp）。
+# ============================================================
+
+[Unit]
+Description=GEO-Optimizer MCP Server (streamable-HTTP)
+After=network.target geotool.service
+Wants=geotool.service
+
+[Service]
+Type=simple
+User=root
+Group=root
+WorkingDirectory=/opt/geotool/current
+Environment="PATH=/opt/geotool/current/.venv/bin:/usr/local/bin:/usr/bin"
+# 平台凭据与传输参数（含服务端默认 API Key）。前缀 - 表示文件缺失时忽略，
+# 服务仍可用默认值启动（base_url=http://localhost:5000，无默认 key）。
+EnvironmentFile=-/opt/geotool/shared/mcp.env
+
+# streamable-HTTP：绑定回环地址（仅经 Nginx 暴露），挂载路径 /mcp
+ExecStart=/opt/geotool/current/.venv/bin/python -m mcp_server \
+    --transport streamable-http \
+    --host 127.0.0.1 \
+    --port 8000 \
+    --path /mcp
+
+# 重启策略
+Restart=on-failure
+RestartSec=5
+StartLimitInterval=60
+StartLimitBurst=3
+
+# 日志
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=geo-mcp
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% block content %}
+<h2 class="page-title">{{ _('admin_artifacts_title') }}</h2>
+
+<div class="card">
+  <form method="get" class="inline-form">
+    <label>{{ _('filter') }}:</label>
+    <select name="task_id">
+      <option value="">{{ _('all_tasks') }}</option>
+      {% for t in task_choices %}
+      <option value="{{ t.id }}" {{ 'selected' if t.id == f_task_id else '' }}>
+        {{ t.target_url }} ({{ t.id[:8] }})</option>
+      {% endfor %}
+    </select>
+    <input type="hidden" name="per_page" value="{{ per_page }}">
+    <button class="btn btn-sm" type="submit">{{ _('filter') }}</button>
+  </form>
+</div>
+
+<div class="card">
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>{{ _('target_url') }}</th>
+          <th>{{ _('owner') }}</th>
+          <th>{{ _('belong_item') }}</th>
+          <th>{{ _('filename') }}</th>
+          <th>{{ _('item_source') }}</th>
+          <th>{{ _('updated_at') }}</th>
+          <th>{{ _('actions') }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for art, item, task, username in rows %}
+        <tr>
+          <td title="{{ art.task_id }}">{{ task.target_url }}</td>
+          <td>{{ username }}</td>
+          <td>{{ item.title }}</td>
+          <td>{{ art.filename }}</td>
+          <td><span class="badge muted">{{ _('source_' + art.source) }}</span></td>
+          <td class="muted">{{ art.updated_at | localtime }}</td>
+          <td>
+            <a href="{{ url_for('plan.artifact_edit', artifact_id=art.id) }}">{{ _('edit_item') }}</a>
+            &nbsp;
+            <a href="{{ url_for('plan.artifact_download', artifact_id=art.id) }}">{{ _('artifact_download') }}</a>
+            &nbsp;
+            <form method="post" style="display:inline"
+                  action="{{ url_for('plan.artifact_delete', artifact_id=art.id) }}"
+                  data-confirm="{{ _('confirm_delete') }}">
+              <input type="hidden" name="next"
+                     value="{{ url_for('admin.artifacts', page=page, per_page=per_page, task_id=f_task_id) }}">
+              <button class="btn btn-sm btn-danger" type="submit">{{ _('delete') }}</button>
+            </form>
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="7" class="muted">{{ _('no_data') }}</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <div class="pagination mt">
+    <span class="muted">{{ _('total_count') }} {{ total }}</span>
+    <span class="muted">{{ _('per_page') }}:</span>
+    {% for n in per_page_choices %}
+      {% if n == per_page %}<span class="badge ok">{{ n }}</span>
+      {% else %}<a href="{{ url_for('admin.artifacts', page=1, per_page=n, task_id=f_task_id) }}">{{ n }}</a>{% endif %}
+    {% endfor %}
+    <span class="sep"></span>
+    {% if page > 1 %}
+      <a href="{{ url_for('admin.artifacts', page=page-1, per_page=per_page, task_id=f_task_id) }}">{{ _('prev_page') }}</a>
+    {% endif %}
+    <span class="muted">{{ page }} / {{ pages }}</span>
+    {% if page < pages %}
+      <a href="{{ url_for('admin.artifacts', page=page+1, per_page=per_page, task_id=f_task_id) }}">{{ _('next_page') }}</a>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

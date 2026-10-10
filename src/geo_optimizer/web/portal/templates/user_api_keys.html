@@ -1,0 +1,163 @@
+{% extends "base.html" %}
+{% block content %}
+<h2 class="page-title">{{ _('api_keys_title') }}</h2>
+
+{% if new_key %}
+<div class="card" style="border-left: 4px solid #10b981;">
+  <h3>{{ _('api_key_created') }}</h3>
+  <p class="muted">{{ _('api_key_copy_hint') }}</p>
+  <div style="display:flex;align-items:center;gap:10px;">
+    <code id="new-key-value" style="flex:1;padding:12px;background:#f3f4f6;border-radius:6px;word-break:break-all;font-size:14px;">{{ new_key }}</code>
+    <button type="button" class="btn btn-primary" onclick="copyText('new-key-value', 'copy-btn')" id="copy-btn">{{ _('api_key_copy_btn') }}</button>
+  </div>
+  <div style="margin-top:12px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+    <form method="post" style="display:inline" action="{{ url_for('user.api_key_export_skill', key_id=(regenerated_key_id or keys[0].id)) }}">
+      <input type="hidden" name="raw_key" value="{{ new_key }}">
+      <button type="submit" class="btn btn-primary">{{ _('api_key_export_skill') }} (ZIP)</button>
+    </form>
+    <form method="post" style="display:inline" action="{{ url_for('user.api_key_export_mcp', key_id=(regenerated_key_id or keys[0].id)) }}">
+      <input type="hidden" name="raw_key" value="{{ new_key }}">
+      <button type="submit" class="btn btn-primary">{{ _('api_key_export_mcp') }} (ZIP)</button>
+    </form>
+    <span class="muted" style="font-size:12px;">{{ _('api_key_export_skill_hint') }}</span>
+  </div>
+</div>
+{% endif %}
+
+<div class="card">
+  <h3>{{ _('api_key_generate') }}</h3>
+  <form method="post" action="{{ url_for('user.api_key_generate') }}" style="display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap;">
+    <div>
+      <label>{{ _('api_key_name') }}</label><br>
+      <input type="text" name="name" placeholder="{{ _('api_key_name_placeholder') }}" maxlength="64">
+    </div>
+    <div>
+      <label>{{ _('api_key_expires_days') }}</label><br>
+      <input type="number" name="expires_days" value="365" min="1" max="3650" style="width:100px;">
+    </div>
+    <button type="submit" class="btn btn-primary">{{ _('api_key_generate_btn') }}</button>
+  </form>
+</div>
+
+<div class="card">
+  <div style="display:flex;justify-content:space-between;align-items:center;">
+    <h3>{{ _('api_keys_list') }}</h3>
+    <span class="muted">{{ _('api_total_calls') }}: <strong>{{ total_calls }}</strong></span>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>{{ _('api_key_name') }}</th>
+          <th>{{ _('api_key_prefix') }}</th>
+          <th>{{ _('api_key_expires') }}</th>
+          <th>{{ _('api_key_status') }}</th>
+          <th>{{ _('api_key_calls') }}</th>
+          <th>{{ _('api_key_last_used') }}</th>
+          <th>{{ _('actions') }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for key in keys %}
+        <tr{% if regenerated_key_id and key.id == regenerated_key_id %} style="background:#ecfdf5;"{% endif %}>
+          <td>{{ key.name or '-' }}</td>
+          <td>
+            {% if regenerated_key_id and key.id == regenerated_key_id and new_key %}
+            <code id="key-full-{{ key.id }}" style="font-size:12px;word-break:break-all;">{{ new_key }}</code>
+            <button type="button" class="btn btn-sm" onclick="copyText('key-full-{{ key.id }}', 'row-copy-{{ key.id }}')" id="row-copy-{{ key.id }}">{{ _('api_key_copy_btn') }}</button>
+            {% else %}
+            <code id="key-val-{{ key.id }}" data-masked="{{ key.key_prefix }}..." style="font-size:12px;word-break:break-all;">{{ key.key_prefix }}...</code>
+            {% if key.key_plaintext %}
+            <button type="button" class="btn btn-sm" id="key-reveal-{{ key.id }}" onclick="toggleApiKey({{ key.id }})">{{ _('api_key_show') }}</button>
+            <button type="button" class="btn btn-sm" id="key-copy-{{ key.id }}" onclick="copyApiKey({{ key.id }})" style="display:none;">{{ _('api_key_copy_btn') }}</button>
+            {% else %}
+            <span class="muted" style="font-size:11px;" title="{{ _('api_key_no_plaintext') }}">{{ _('api_key_no_plaintext') }}</span>
+            {% endif %}
+            {% endif %}
+          </td>
+          <td>{{ key.expires_at | localtime }}</td>
+          <td>
+            {% if not key.is_active %}<span class="badge err">{{ _('api_key_disabled') }}</span>
+            {% elif key.is_expired %}<span class="badge warn">{{ _('api_key_expired') }}</span>
+            {% else %}<span class="badge ok">{{ _('api_key_active') }}</span>{% endif %}
+          </td>
+          <td>{{ key.total_calls }}</td>
+          <td>{{ key.last_used_at | localtime if key.last_used_at else '-' }}</td>
+          <td style="white-space:nowrap;">
+            <a href="{{ url_for('user.api_key_logs', key_id=key.id) }}">{{ _('api_key_view_logs') }}</a>
+            &nbsp;
+            <form method="post" style="display:inline" action="{{ url_for('user.api_key_export_skill', key_id=key.id) }}">
+              <button class="btn btn-sm" type="submit" title="{{ _('api_key_export_skill_hint') }}">{{ _('api_key_export_skill') }}</button>
+            </form>
+            &nbsp;
+            <form method="post" style="display:inline" action="{{ url_for('user.api_key_export_mcp', key_id=key.id) }}">
+              <button class="btn btn-sm" type="submit" title="{{ _('api_key_export_mcp_hint') }}">{{ _('api_key_export_mcp') }}</button>
+            </form>
+            {% if key.is_active %}
+            &nbsp;
+            <form method="post" style="display:inline" action="{{ url_for('user.api_key_regenerate', key_id=key.id) }}"
+                  data-confirm="{{ _('confirm_regenerate') }}">
+              <button class="btn btn-sm" type="submit">{{ _('api_key_regenerate') }}</button>
+            </form>
+            &nbsp;
+            <form method="post" style="display:inline" action="{{ url_for('user.api_key_revoke', key_id=key.id) }}"
+                  data-confirm="{{ _('confirm_revoke') }}">
+              <button class="btn btn-sm btn-danger" type="submit">{{ _('api_key_revoke') }}</button>
+            </form>
+            {% endif %}
+            &nbsp;
+            <form method="post" style="display:inline" action="{{ url_for('user.api_key_delete', key_id=key.id) }}"
+                  data-confirm="{{ _('confirm_delete_key') }}">
+              <button class="btn btn-sm btn-danger" type="submit">{{ _('api_key_delete') }}</button>
+            </form>
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="7" class="muted">{{ _('no_data') }}</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+function copyText(srcId, btnId) {
+  var text = document.getElementById(srcId).textContent.trim();
+  navigator.clipboard.writeText(text).then(function() {
+    var btn = document.getElementById(btnId);
+    var orig = btn.textContent;
+    btn.textContent = '{{ _("api_key_copied") }}';
+    btn.disabled = true;
+    setTimeout(function() { btn.textContent = orig; btn.disabled = false; }, 2000);
+  });
+}
+
+/* API 密钥明文查看/隐藏（明文按需从后端获取，不预埋在页面中） */
+function toggleApiKey(keyId) {
+  var code = document.getElementById('key-val-' + keyId);
+  var btn = document.getElementById('key-reveal-' + keyId);
+  var copyBtn = document.getElementById('key-copy-' + keyId);
+  if (btn.dataset.shown === '1') {
+    code.textContent = code.dataset.masked;
+    btn.dataset.shown = '0';
+    btn.textContent = '{{ _("api_key_show") }}';
+    if (copyBtn) copyBtn.style.display = 'none';
+    return;
+  }
+  fetch('/api-keys/' + keyId + '/reveal')
+    .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
+    .then(function (data) {
+      code.textContent = data.api_key;
+      btn.dataset.shown = '1';
+      btn.textContent = '{{ _("api_key_hide") }}';
+      if (copyBtn) copyBtn.style.display = '';
+    })
+    .catch(function () { alert('{{ _("api_key_reveal_fail") }}'); });
+}
+
+/* 复制已展示的明文密钥 */
+function copyApiKey(keyId) {
+  copyText('key-val-' + keyId, 'key-copy-' + keyId);
+}
+</script>
+{% endblock %}

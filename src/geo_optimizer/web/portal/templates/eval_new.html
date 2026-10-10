@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block content %}
+<h2 class="page-title">{{ _('eval_new_title') }}</h2>
+
+<div class="card" style="max-width: 640px;">
+  <p class="muted">{{ _('quota_left') }}: <strong>{{ current_user.quota_left }}</strong></p>
+  <form method="post" class="mt">
+    <div class="form-row">
+      <label for="target_url">{{ _('target_url') }}</label>
+      <input type="url" id="target_url" name="target_url"
+             placeholder="https://example.com" required>
+    </div>
+    <div class="form-row">
+      <label for="task_type">{{ _('task_type') }}</label>
+      <select id="task_type" name="task_type">
+        <option value="eval">{{ _('type_eval') }}</option>
+        <option value="plan" selected>{{ _('type_plan') }}</option>
+      </select>
+    </div>
+    <button class="btn" type="submit">{{ _('start_eval') }}</button>
+  </form>
+</div>
+{% endblock %}

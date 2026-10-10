@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+{% block content %}
+<h2 class="page-title">{{ _('history_title') }}</h2>
+
+<div class="card">
+  <form id="batch-del-form" method="post"
+        action="{{ url_for('user.history_batch_delete', page=page, per_page=per_page) }}"></form>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th style="width:32px;"><input type="checkbox" id="check-all" onclick="toggleAll(this)"></th>
+          <th>{{ _('target_url') }}</th>
+          <th>{{ _('task_type') }}</th>
+          <th>{{ _('status') }}</th>
+          <th>{{ _('score') }}</th>
+          <th>{{ _('created_at') }}</th>
+          <th>{{ _('actions') }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for task in tasks %}
+        <tr>
+          <td><input type="checkbox" class="task-check" name="task_ids" value="{{ task.id }}" form="batch-del-form"></td>
+          <td>{{ task.target_url }}</td>
+          <td>{{ _('type_plan') if task.type == 'plan' else _('type_eval') }}</td>
+          <td>
+            {% if task.status == 'completed' %}<span class="badge ok">{{ _('task_completed') }}</span>
+            {% elif task.status == 'failed' %}<span class="badge err">{{ _('task_failed') }}</span>
+            {% else %}<span class="badge warn">{{ _('generating') }}</span>{% endif %}
+          </td>
+          <td>{{ '%.1f'|format(task.overall_score) if task.overall_score else '-' }}</td>
+          <td>{{ task.created_at | localtime }}</td>
+          <td>
+            <a href="{{ url_for('user.eval_detail', task_id=task.id) }}">{{ _('view') }}</a>
+            &nbsp;
+            {% if task.status == 'failed' %}
+            <form method="post" style="display:inline"
+                  action="{{ url_for('user.eval_retry', task_id=task.id) }}">
+              <button class="btn btn-sm" type="submit">{{ _('retry') }}</button>
+            </form>
+            &nbsp;
+            {% endif %}
+            <form method="post" style="display:inline"
+                  action="{{ url_for('user.history_delete', task_id=task.id, page=page, per_page=per_page) }}"
+                  data-confirm="{{ _('confirm_delete') }}">
+              <button class="btn btn-sm btn-danger" type="submit">{{ _('delete') }}</button>
+            </form>
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="7" class="muted">{{ _('no_data') }}</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <div class="mt" style="display:flex;align-items:center;gap:10px;">
+    <button type="submit" class="btn btn-sm btn-danger" form="batch-del-form"
+            onclick="return confirmBatchDelete()">{{ _('batch_delete') }}</button>
+    <span class="muted" id="batch-count"></span>
+  </div>
+
+  <div class="pagination mt">
+    <span class="muted">{{ _('total_count') }} {{ total }}</span>
+    <span class="muted">{{ _('per_page') }}:</span>
+    {% for n in per_page_choices %}
+      {% if n == per_page %}<span class="badge ok">{{ n }}</span>
+      {% else %}<a href="{{ url_for('user.history', page=1, per_page=n) }}">{{ n }}</a>{% endif %}
+    {% endfor %}
+    <span class="sep"></span>
+    {% if page > 1 %}
+      <a href="{{ url_for('user.history', page=page-1, per_page=per_page) }}">{{ _('prev_page') }}</a>
+    {% endif %}
+    <span class="muted">{{ page }} / {{ pages }}</span>
+    {% if page < pages %}
+      <a href="{{ url_for('user.history', page=page+1, per_page=per_page) }}">{{ _('next_page') }}</a>
+    {% endif %}
+  </div>
+</div>
+
+<script>
+function toggleAll(master) {
+  document.querySelectorAll('.task-check').forEach(function (cb) { cb.checked = master.checked; });
+  updateBatchCount();
+}
+function updateBatchCount() {
+  var n = document.querySelectorAll('.task-check:checked').length;
+  document.getElementById('batch-count').textContent = n > 0 ? n : '';
+}
+function confirmBatchDelete() {
+  var n = document.querySelectorAll('.task-check:checked').length;
+  if (n === 0) {
+    alert('{{ _("batch_select_none") }}');
+    return false;
+  }
+  return confirm('{{ _("batch_delete_confirm") }} (' + n + ')');
+}
+document.querySelectorAll('.task-check').forEach(function (cb) {
+  cb.addEventListener('change', updateBatchCount);
+});
+</script>
+{% endblock %}

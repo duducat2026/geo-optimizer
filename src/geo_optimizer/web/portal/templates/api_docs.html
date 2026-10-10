@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="{{ current_locale }}">
+<head>
+  <meta charset="UTF-8">
+  {% include "gtm_head.html" %}
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ _('app_name') }} — {{ _('api_docs_title') }}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/docs.css') }}">
+</head>
+<body>
+  {% include "gtm_body.html" %}
+  <div class="read-progress" aria-hidden="true"></div>
+  <div class="doc-bg" aria-hidden="true"></div>
+
+  <!-- ── 顶栏 ── -->
+  <header class="doc-topbar">
+    <a class="doc-brand" href="{{ url_for('main.dashboard') }}">
+      <span class="glyph" aria-hidden="true"></span>{{ _('app_name') }}
+    </a>
+    <span class="doc-crumb">docs <span class="sep">/</span> <b>open-api</b></span>
+    <span class="spacer"></span>
+    <span class="lang-mini">
+      <a href="{{ url_for('main.switch_lang', code='zh') }}" class="{{ 'on' if current_locale == 'zh' else '' }}">中文</a>
+      <a href="{{ url_for('main.switch_lang', code='en') }}" class="{{ 'on' if current_locale == 'en' else '' }}">EN</a>
+    </span>
+    <a class="t-link" href="{{ url_for('main.dashboard') }}">{{ _('dashboard') }}</a>
+    <a class="t-btn" href="{{ url_for('user.api_keys') }}">{{ _('nav_api_keys') }}</a>
+  </header>
+
+  <div class="doc-shell">
+    <!-- ── 左侧目录 ── -->
+    <aside class="doc-toc">
+      <p class="toc-label">CONTENTS</p>
+      <ul>
+        <li><a href="#a1"><span class="n">01</span>{{ _('api_docs_overview_t') }}</a></li>
+        <li>
+          <a href="#a2"><span class="n">02</span>{{ _('api_docs_endpoints_t') }}</a>
+          <ul class="sub">
+            <li><a href="#ep-submit">{{ _('api_docs_submit_task') }}</a></li>
+            <li><a href="#ep-status">{{ _('api_docs_task_status') }}</a></li>
+            <li><a href="#ep-result">{{ _('api_docs_task_result') }}</a></li>
+            <li><a href="#ep-download">{{ _('api_docs_download') }}</a></li>
+            <li><a href="#ep-cancel">{{ _('api_docs_cancel_t') }}</a></li>
+            <li><a href="#ep-usage">{{ _('api_docs_usage') }}</a></li>
+          </ul>
+        </li>
+        <li><a href="#a3"><span class="n">03</span>{{ _('api_docs_status_flow_t') }}</a></li>
+        <li><a href="#a4"><span class="n">04</span>{{ _('api_docs_error_codes') }}</a></li>
+        <li><a href="#a5"><span class="n">05</span>{{ _('api_docs_client_t') }}</a></li>
+      </ul>
+      <div class="toc-cta">
+        <p>{{ _('api_docs_auth_hint') }}</p>
+        <a href="{{ url_for('user.api_keys') }}">{{ _('nav_api_keys') }} →</a>
+      </div>
+    </aside>
+
+    <!-- ── 文章主体 ── -->
+    <main class="doc-main">
+      <div class="doc-header rv">
+        <p class="doc-kicker">OPEN API REFERENCE · v1</p>
+        <h1>{{ _('api_docs_title') }}</h1>
+        <p class="doc-lede">{{ _('api_docs_lede') }}</p>
+        <div class="doc-meta">
+          <span>BASE <b>/api/v1</b></span>
+          <span>AUTH <b>BEARER TOKEN</b></span>
+          <span>FORMAT <b>JSON</b></span>
+        </div>
+      </div>
+
+      <!-- 01 概览 -->
+      <section class="doc-sec rv" id="a1">
+        <h2><span class="no">01</span>{{ _('api_docs_overview_t') }}</h2>
+        <h3>Base URL</h3>
+        <div class="code-panel">
+          <div class="code-head">
+            <span class="dots"><i></i><i></i><i></i></span>
+            <span class="lang-tag">url</span>
+            <button class="code-copy" data-copied="✓ {{ _('api_key_copied') }}">copy</button>
+          </div>
+          <pre>http://&lt;your-host&gt;:&lt;port&gt;/api/v1</pre>
+        </div>
+        <h3>{{ _('api_docs_auth_t') }}</h3>
+        <p>{{ _('api_docs_auth_desc') }}</p>
+        <div class="code-panel">
+          <div class="code-head">
+            <span class="dots"><i></i><i></i><i></i></span>
+            <span class="lang-tag">http</span>
+            <button class="code-copy" data-copied="✓ {{ _('api_key_copied') }}">copy</button>
+          </div>
+          <pre>Authorization: Bearer geo_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx</pre>
+        </div>
+        <div class="callout tip">
+          <span class="ico">✓</span>
+          <div>{{ _('api_docs_auth_hint') }}</div>
+        </div>
+      </section>
+
+      <!-- 02 端点 -->
+      <section class="doc-sec rv" id="a2">
+        <h2><span class="no">02</span>{{ _('api_docs_endpoints_t') }}</h2>
+        <div class="ep-list">
+          <div class="ep-row"><span class="mth post">POST</span><span class="path">/api/v1/tasks</span><span class="desc">{{ _('api_docs_submit_task') }}</span></div>
+          <div class="ep-row"><span class="mth get">GET</span><span class="path">/api/v1/tasks/{task_id}</span><span class="desc">{{ _('api_docs_task_status') }}</span></div>
+          <div class="ep-row"><span class="mth get">GET</span><span class="path">/api/v1/tasks/{task_id}/result</span><span class="desc">{{ _('api_docs_task_result') }}</span></div>
+          <div class="ep-row"><span class="mth get">GET</span><span class="path">/api/v1/tasks/{task_id}/download</span><span class="desc">{{ _('api_docs_download') }}</span></div>
+          <div class="ep-row"><span class="mth post">POST</span><span class="path">/api/v1/tasks/{task_id}/cancel</span><span class="desc">{{ _('api_docs_cancel_t') }}</span></div>
+          <div class="ep-row"><span class="mth get">GET</span><span class="path">/api/v1/usage</span><span class="desc">{{ _('api_docs_usage') }}</span></div>
+        </div>
+
+        <h3 id="ep-submit">2.1 {{ _('api_docs_submit_task') }}</h3>
+        <div class="code-panel">
+          <div class="code-head">
+            <span class="dots"><i></i><i></i><i></i></span>
+            <span class="lang-tag">http</span><span class="fname">{{ _('api_docs_req') }}</span>
+            <button class="code-copy" data-copied="✓ {{ _('api_key_copied') }}">copy</button>
+          </div>
+          <pre>POST /api/v1/tasks
+Content-Type: application/json
+
+{
+  <span class="k">"target_url"</span>: <span class="s">"https://example.com"</span>,
+  <span class="k">"task_type"</span>: <span class="s">"plan"</span>       <span class="c">// "eval" | "plan"</span>
+}</pre>
+        </div>
+        <div class="code-panel">
+          <div class="code-head">
+            <span class="dots"><i></i><i></i><i></i></span>
+            <span class="lang-tag">json</span><span class="fname">{{ _('api_docs_resp') }} · 201</span>
+            <button class="code-copy" data-copied="✓ {{ _('api_key_copied') }}">copy</button>
+          </div>
+          <pre>{
+  <span class="k">"task_id"</span>: <span class="s">"uuid-string"</span>,
+  <span class="k">"status"</span>: <span class="s">"pending"</span>,
+  <span class="k">"target_url"</span>: <span class="s">"https://example.com"</span>,
+  <span class="k">"task_type"</span>: <span class="s">"plan"</span>,
+  <span class="k">"message"</span>: <span class="s">"Task submitted successfully"</span>
+}</pre>
+        </div>
+        <h4>{{ _('api_docs_err_resp') }}</h4>
+        <div class="tbl-wrap"><table>
+          <thead><tr><th>Status</th><th>error</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td><span class="st-badge warn">400</span></td><td><code>invalid_params</code></td><td>target_url is required</td></tr>
+            <tr><td><span class="st-badge err">401</span></td><td><code>missing_token</code> / <code>invalid_token</code></td><td>Authentication failed</td></tr>
+            <tr><td><span class="st-badge err">403</span></td><td><code>quota_exceeded</code></td><td>Evaluation quota exhausted</td></tr>
+            <tr><td><span class="st-badge err">429</span></td><td><code>concurrent_limit</code></td><td>Too many concurrent tasks</td></tr>
+          </tbody>
+        </table></div>
+
+        <h3 id="ep-status">2.2 {{ _('api_docs_task_status') }}</h3>
+        <div class="code-panel">
+          <div class="code-head">
+            <span class="dots"><i></i><i></i><i></i></span>
+            <span class="lang-tag">http</span><span class="fname">{{ _('api_docs_req') }}</span>
+            <button class="code-copy" data-copied="✓ {{ _('api_key_copied') }}">copy</button>
+          </div>
+          <pre>GET /api/v1/tasks/{task_id}</pre>
+        </div>
+        <div class="code-panel">
+          <div class="code-head">
+            <span class="dots"><i></i><i></i><i></i></span>
+            <span class="lang-tag">json</span><span class="fname">{{ _('api_docs_resp') }} · 200</span>
+            <button class="code-copy" data-copied="✓ {{ _('api_key_copied') }}">copy</button>
+          </div>
+          <pre>{
+  <span class="k">"task_id"</span>: <span class="s">"uuid-string"</span>,
+  <span class="k">"target_url"</span>: <span class="s">"https://example.com"</span>,
+  <span class="k">"task_type"</span>: <span class="s">"plan"</span>,
+  <span class="k">"source"</span>: <span class="s">"api"</span>,
+  <span class="k">"status"</span>: <span class="s">"running"</span>,       <span class="c">// pending | running | completed | failed</span>
+  <span class="k">"progress"</span>: <span class="n">60</span>,
+  <span class="k">"message"</span>: <span class="s">"generating_plan"</span>,
+  <span class="k">"overall_score"</span>: <span class="n">0.0</span>,
+  <span class="k">"error"</span>: <span class="s">""</span>,
+  <span class="k">"created_at"</span>: <span class="s">"2025-01-01T00:00:00Z"</span>,
+  <span class="k">"completed_at"</span>: <span class="n">null</span>
+}</pre>
+        </div>
+
+        <h3 id="ep-result">2.3 {{ _('api_docs_task_result') }}</h3>
+        <div class="code-panel">
+          <div class="code-head">
+            <span class="dots"><i></i><i></i><i></i></span>
+            <span class="lang-tag">http</span><span class="fname">{{ _('api_docs_req') }}</span>
+            <button class="code-copy" data-copied="✓ {{ _('api_key_copied') }}">copy</button>
+          </div>
+          <pre>GET /api/v1/tasks/{task_id}/result</pre>
+        </div>
+        <div class="code-panel">
+          <div class="code-head">
+            <span class="dots"><i></i><i></i><i></i></span>
+            <span class="lang-tag">json</span><span class="fname">{{ _('api_docs_resp') }} · 200 (completed)</span>
+            <button class="code-copy" data-copied="✓ {{ _('api_key_copied') }}">copy</button>
+          </div>
+          <pre>{
+  <span class="k">"task_id"</span>: <span class="s">"uuid-string"</span>,
+  <span class="k">"status"</span>: <span class="s">"completed"</span>,
+  <span class="k">"overall_score"</span>: <span class="n">72.5</span>,
+  <span class="k">"result"</span>: {
+    <span class="k">"url"</span>: <span class="s">"https://example.com"</span>,
+    <span class="k">"title"</span>: <span class="s">"Example"</span>,
+    <span class="k">"overall_score"</span>: <span class="n">72.5</span>,
+    <span class="k">"engine_scores"</span>: [...],
+    <span class="k">"strengths"</span>: [...],
+    <span class="k">"weaknesses"</span>: [...],
+    <span class="k">"page_audit"</span>: {...}
+  },
+  <span class="k">"download_url"</span>: <span class="s">"/api/v1/tasks/{task_id}/download"</span>
+}</pre>
+        </div>
+        <div class="callout info">
+          <span class="ico">i</span>
+          <div>{{ _('api_docs_result_hint') }}</div>
+        </div>
+
+        <h3 id="ep-download">2.4 {{ _('api_docs_download') }}</h3>
+        <p>{{ _('api_docs_download_desc') }}</p>
+        <div class="code-panel">
+          <div class="code-head">
+            <span class="dots"><i></i><i></i><i></i></span>
+            <span class="lang-tag">http</span><span class="fname">{{ _('api_docs_req') }}</span>
+            <button class="code-copy" data-copied="✓ {{ _('api_key_copied') }}">copy</button>
+          </div>
+          <pre>GET /api/v1/tasks/{task_id}/download</pre>
+        </div>
+        <div class="code-panel">
+          <div class="code-head">
+            <span class="dots"><i></i><i></i><i></i></span>
+            <span class="lang-tag">http</span><span class="fname">{{ _('api_docs_resp') }}</span>
+            <button class="code-copy" data-copied="✓ {{ _('api_key_copied') }}">copy</button>
+          </div>
+          <pre>Content-Type: application/zip
+Content-Disposition: attachment; filename=geo_plan_{task_id}.zip</pre>
+        </div>
+
+        <h3 id="ep-cancel">2.5 {{ _('api_docs_cancel_t') }}</h3>
+        <div class="code-panel">
+          <div class="code-head">
+            <span class="dots"><i></i><i></i><i></i></span>
+            <span class="lang-tag">http</span><span class="fname">{{ _('api_docs_req') }}</span>
+            <button class="code-copy" data-copied="✓ {{ _('api_key_copied') }}">copy</button>
+          </div>
+          <pre>POST /api/v1/tasks/{task_id}/cancel</pre>
+        </div>
+        <p class="muted" style="color:var(--muted);font-size:13.5px;">{{ _('api_docs_cancel_desc') }}</p>
+
+        <h3 id="ep-usage">2.6 {{ _('api_docs_usage') }}</h3>
+        <div class="code-panel">
+          <div class="code-head">
+            <span class="dots"><i></i><i></i><i></i></span>
+            <span class="lang-tag">http</span><span class="fname">{{ _('api_docs_req') }}</span>
+            <button class="code-copy" data-copied="✓ {{ _('api_key_copied') }}">copy</button>
+          </div>
+          <pre>GET /api/v1/usage</pre>
+        </div>
+        <div class="code-panel">
+          <div class="code-head">
+            <span class="dots"><i></i><i></i><i></i></span>
+            <span class="lang-tag">json</span><span class="fname">{{ _('api_docs_resp') }} · 200</span>
+            <button class="code-copy" data-copied="✓ {{ _('api_key_copied') }}">copy</button>
+          </div>
+          <pre>{
+  <span class="k">"total_calls"</span>: <span class="n">42</span>,
+  <span class="k">"keys"</span>: [
+    {
+      <span class="k">"id"</span>: <span class="n">1</span>,
+      <span class="k">"name"</span>: <span class="s">"Production"</span>,
+      <span class="k">"key_prefix"</span>: <span class="s">"geo_a3Bf9x"</span>,
+      <span class="k">"total_calls"</span>: <span class="n">42</span>,
+      <span class="k">"is_active"</span>: <span class="n">true</span>,
+      <span class="k">"last_used_at"</span>: <span class="s">"2025-01-01T12:00:00Z"</span>
+    }
+  ]
+}</pre>
+        </div>
+      </section>
+
+      <!-- 03 状态流转 -->
+      <section class="doc-sec rv" id="a3">
+        <h2><span class="no">03</span>{{ _('api_docs_status_flow_t') }}</h2>
+        <p>{{ _('api_docs_status_flow_desc') }}</p>
+        <div class="flow">
+          <span class="node">queued</span><span class="arr">→</span>
+          <span class="node">pending</span><span class="arr">→</span>
+          <span class="node">running</span><span class="arr">→</span>
+          <span class="node end-ok">completed</span>
+          <span class="arr">/</span>
+          <span class="node end-bad">failed</span>
+          <span class="arr">/</span>
+          <span class="node end-bad">cancelled</span>
+        </div>
+        <div class="callout tip">
+          <span class="ico">✓</span>
+          <div>{{ _('api_docs_poll_hint') }}</div>
+        </div>
+      </section>
+
+      <!-- 04 错误码 -->
+      <section class="doc-sec rv" id="a4">
+        <h2><span class="no">04</span>{{ _('api_docs_error_codes') }}</h2>
+        <div class="tbl-wrap"><table>
+          <thead><tr><th>HTTP Status</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td><span class="st-badge ok">200</span></td><td>Success</td></tr>
+            <tr><td><span class="st-badge ok">201</span></td><td>Task created</td></tr>
+            <tr><td><span class="st-badge warn">400</span></td><td>Invalid parameters</td></tr>
+            <tr><td><span class="st-badge err">401</span></td><td>Unauthorized (missing / invalid / expired API key)</td></tr>
+            <tr><td><span class="st-badge err">403</span></td><td>Forbidden (quota exceeded / access denied)</td></tr>
+            <tr><td><span class="st-badge warn">404</span></td><td>Resource not found</td></tr>
+            <tr><td><span class="st-badge err">429</span></td><td>Rate limit (concurrent task limit)</td></tr>
+          </tbody>
+        </table></div>
+      </section>
+
+      <!-- 05 Python 客户端 -->
+      <section class="doc-sec rv" id="a5">
+        <h2><span class="no">05</span>{{ _('api_docs_client_t') }}</h2>
+        <p>{{ _('api_docs_client_desc') }}</p>
+        <div class="code-panel">
+          <div class="code-head">
+            <span class="dots"><i></i><i></i><i></i></span>
+            <span class="lang-tag">python</span><span class="fname">client/geo_api_client.py</span>
+            <button class="code-copy" data-copied="✓ {{ _('api_key_copied') }}">copy</button>
+          </div>
+          <pre><span class="k">from</span> client.geo_api_client <span class="k">import</span> GeoApiClient
+
+client = GeoApiClient(<span class="s">"http://localhost:5001"</span>, <span class="s">"geo_your_api_key"</span>)
+
+<span class="c"># Submit task</span>
+task_id = client.submit_task(<span class="s">"https://example.com"</span>, task_type=<span class="s">"plan"</span>)
+
+<span class="c"># Wait for completion</span>
+result = client.wait_for_completion(task_id, timeout=<span class="n">600</span>)
+print(f<span class="s">"Score: {result['overall_score']}"</span>)
+
+<span class="c"># Download report</span>
+client.download(task_id, <span class="s">"report.zip"</span>)</pre>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <footer class="doc-footer">
+    <div class="inner">
+      <span>GEO OPTIMIZER · OPEN API v1</span>
+      <span>
+        <a href="{{ url_for('user.api_keys') }}">{{ _('nav_api_keys') }}</a>
+        &nbsp;·&nbsp;
+        <a href="{{ url_for('main.dashboard') }}">{{ _('dashboard') }}</a>
+      </span>
+    </div>
+  </footer>
+
+  <script src="{{ url_for('static', filename='js/docs.js') }}"></script>
+</body>
+</html>

@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block content %}
+<h2 class="page-title">{{ _('plan_items_title') }}</h2>
+
+<div class="card">
+  <p><strong>{{ task.target_url }}</strong>
+    <span class="badge muted">{{ _('overall_score') }}: {{ '%.1f'|format(task.overall_score) }}</span>
+  </p>
+  {% if total %}
+  <a class="btn" href="{{ url_for('plan.bundle_download', task_id=task.id) }}">
+    {{ _('download_all_items') }}</a>
+  <a class="btn btn-ghost" href="{{ url_for('plan.artifact_list', task_id=task.id) }}">
+    {{ _('manage_artifacts') }}</a>
+  {% else %}
+  <p class="muted">{{ _('no_items') }}</p>
+  {% endif %}
+</div>
+
+{% for prio in ('high', 'mid', 'low') %}
+  {% set items = grouped[prio] %}
+  {% if items %}
+  <div class="card">
+    <h3><span class="badge prio-{{ prio }}">{{ _('prio_' + prio) }}</span>
+      {{ _('priority') }}</h3>
+    <table class="table">
+      <thead><tr>
+        <th>{{ _('item_title') }}</th><th>{{ _('item_source') }}</th>
+        <th>{{ _('updated_at') }}</th><th>{{ _('actions') }}</th>
+      </tr></thead>
+      <tbody>
+        {% for item in items %}
+        <tr>
+          <td>
+            {{ item.title }}
+            {% if artifact_counts.get(item.id) %}
+            <span class="badge muted" title="{{ _('artifact_section') }}">
+              📄 {{ artifact_counts[item.id] }}</span>
+            {% endif %}
+            {% if engines_map.get(item.code) %}
+            <span class="muted" style="font-size:.75em"
+                  title="{{ _('adapted_models') }}: {{ engines_map[item.code] | join(', ') }}">
+              🤖 {{ engines_map[item.code] | join(' · ') }}</span>
+            {% endif %}
+          </td>
+          <td><span class="badge muted">
+            {{ _('source_llm') if item.source == 'llm' else _('source_template') }}</span></td>
+          <td class="muted">{{ item.updated_at | localtime }}</td>
+          <td>
+            <a class="btn btn-sm" href="{{ url_for('plan.item_edit', item_id=item.id) }}">
+              {{ _('edit_item') }}</a>
+            <a class="btn btn-sm btn-ghost" href="{{ url_for('plan.item_download', item_id=item.id) }}">
+              {{ _('download_item') }}</a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% endif %}
+{% endfor %}
+
+<p><a href="{{ url_for('user.eval_detail', task_id=task.id) }}">&larr; {{ _('eval_progress') }}</a></p>
+{% endblock %}

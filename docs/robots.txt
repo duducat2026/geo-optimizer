@@ -1,0 +1,25 @@
+# GEO-Optimizer robots.txt
+# 允许所有 AI 爬虫抓取 / Allow all AI crawlers
+
+User-agent: GPTBot
+Allow: /
+
+User-agent: CCBot
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+User-agent: Bytespider
+Allow: /
+
+User-agent: *
+Allow: /
+
+Sitemap: https://geo-optimizer.github.io/geo-optimizer/sitemap.xml

@@ -1,0 +1,159 @@
+{% extends "base.html" %}
+{% block content %}
+<h2 class="page-title">{{ _('eval_progress') }}</h2>
+
+<div class="card">
+  <p><strong>{{ task.target_url }}</strong>
+    <span class="badge muted">{{ _('type_plan') if task.type == 'plan' else _('type_eval') }}</span>
+  </p>
+
+  {% if task.status == 'queued' %}
+    <div class="flash info mt">{{ _('task_queued') }}</div>
+    <p class="muted mt" id="queue-position">{{ _('queue_position') }}: #{{ queue_pos }}</p>
+    <form method="post" class="mt" action="{{ url_for('user.eval_cancel', task_id=task.id) }}">
+      <button class="btn btn-danger" type="submit" onclick="return confirm('{{ _('confirm_cancel') }}')">{{ _('cancel_task') }}</button>
+    </form>
+  {% elif task.status in ('pending', 'running') %}
+    <div id="task-poll" data-task-id="{{ task.id }}" data-status="{{ task.status }}"></div>
+    <div class="progress mt">
+      <div class="bar" id="task-progress-bar" style="width: {{ task.progress }}%"></div>
+    </div>
+    <p class="muted mt" id="task-progress-msg">{{ _(task.message) if task.message else _('generating') }}</p>
+    <form method="post" class="mt" action="{{ url_for('user.eval_cancel', task_id=task.id) }}">
+      <button class="btn btn-danger btn-sm" type="submit" onclick="return confirm('{{ _('confirm_cancel') }}')">{{ _('cancel_task') }}</button>
+    </form>
+  {% elif task.status == 'cancelled' %}
+    <div class="flash mt" style="border-left-color:#f59e0b;">{{ _('task_cancelled') }}</div>
+    <form method="post" class="mt" action="{{ url_for('user.eval_retry', task_id=task.id) }}">
+      <button class="btn" type="submit">{{ _('retry') }}</button>
+    </form>
+  {% elif task.status == 'failed' %}
+    <div class="flash error mt">{{ _('task_failed') }}: {{ _(task.error) }}</div>
+    <form method="post" class="mt" action="{{ url_for('user.eval_retry', task_id=task.id) }}">
+      <button class="btn" type="submit">{{ _('retry') }}</button>
+    </form>
+  {% else %}
+    <div class="grid grid-3 mt">
+      <div class="card stat">
+        <div class="score-big">{{ '%.1f'|format(task.overall_score) }}</div>
+        <div class="label">{{ _('overall_score') }}</div>
+      </div>
+      <div class="card stat">
+        <div class="num">{{ result.engine_scores | length }}</div>
+        <div class="label">{{ _('engine_scores') }}</div>
+      </div>
+      <div class="card stat">
+        {% if result.zip_available %}
+          <a class="btn" href="{{ url_for('user.eval_download', task_id=task.id) }}">
+            {{ _('download_plan') }}</a>
+        {% endif %}
+        {% if item_count %}
+          <a class="btn mt" href="{{ url_for('plan.item_list', task_id=task.id) }}">
+            {{ _('view_plan_items') }}</a>
+        {% elif not result.zip_available %}
+          <span class="muted">{{ _('no_data') }}</span>
+        {% endif %}
+      </div>
+    </div>
+
+    {# --- 页面技术体检 --- #}
+    {% set audit = result.page_audit %}
+    {% if audit %}
+    <div class="grid" style="grid-template-columns: 1fr 1fr;">
+      <div class="card">
+        <h3>{{ _('audit_issues') }}</h3>
+        <ul class="list-plain">
+          {% for c in audit.checks if not c.ok %}
+          <li><span class="badge sev-{{ c.severity }}">{{ _('sev_' + c.severity) }}</span>
+            {{ _('audit_' + c.key) }} <small class="muted">({{ c.value }})</small></li>
+          {% else %}<li class="muted">{{ _('no_data') }}</li>{% endfor %}
+        </ul>
+      </div>
+      <div class="card">
+        <h3>{{ _('audit_strengths') }}</h3>
+        <ul class="list-plain">
+          {% for key in audit.strengths %}<li>&#10003; {{ _('audit_' + key) }}</li>
+          {% else %}<li class="muted">{{ _('no_data') }}</li>{% endfor %}
+        </ul>
+      </div>
+    </div>
+
+    {% if audit.priorities %}
+    <div class="card">
+      <h3>{{ _('audit_priority_title') }}</h3>
+      <ol>
+        {% for key in audit.priorities %}<li>{{ _('audit_' + key) }}</li>{% endfor %}
+      </ol>
+      {% if audit.estimate and audit.estimate.gain %}
+      <p class="muted">{{ _('audit_estimate') }}:
+        <strong>{{ '%.0f'|format(audit.estimate.min) }} -
+          {{ '%.0f'|format(audit.estimate.max) }}</strong> / 100</p>
+      {% endif %}
+    </div>
+    {% endif %}
+    {% endif %}
+
+    {# --- 分引擎独立报告卡 --- #}
+    <h3 class="mt">{{ _('per_engine_report') }}</h3>
+    <div class="grid" style="grid-template-columns: 1fr 1fr;">
+      {% for es in result.engine_scores %}
+      <div class="card">
+        <h3>{{ es.engine }} <small class="muted">{{ es.vendor }}</small>
+          <span class="badge {{ 'sev-green' if es.score >= 70 else ('sev-yellow' if es.score >= 40 else 'sev-red') }}">
+            {{ '%.0f'|format(es.score) }}/100</span></h3>
+        {% if es.breakdown %}
+          {% for dim, score in es.breakdown.items() %}
+          <div class="score-bar-row">
+            <span class="name">{{ dim }}</span>
+            <div class="progress"><div class="bar" style="width: {{ score }}%"></div></div>
+            <span class="val">{{ score }}</span>
+          </div>
+          {% endfor %}
+        {% endif %}
+        {% if es.suggestions %}
+        <ul class="list-plain mt">
+          {% for sug in es.suggestions %}<li class="muted">{{ sug }}</li>{% endfor %}
+        </ul>
+        {% endif %}
+      </div>
+      {% endfor %}
+    </div>
+
+    <div class="grid" style="grid-template-columns: 1fr 1fr;">
+      <div class="card">
+        <h3>{{ _('strengths') }}</h3>
+        <ul class="list-plain">
+          {% for s in result.strengths %}<li>{{ s }}</li>
+          {% else %}<li class="muted">{{ _('no_data') }}</li>{% endfor %}
+        </ul>
+      </div>
+      <div class="card">
+        <h3>{{ _('weaknesses') }}</h3>
+        <ul class="list-plain">
+          {% for w in result.weaknesses %}<li>{{ w }}</li>
+          {% else %}<li class="muted">{{ _('no_data') }}</li>{% endfor %}
+        </ul>
+      </div>
+    </div>
+  {% endif %}
+</div>
+
+{# --- 处理日志控制台（时间倒排，保留 3 天，点击可展示全部历史） --- #}
+{% if logs or task.status in ('pending', 'running', 'queued') %}
+<div class="card">
+  <h3>{{ _('log_console') }}
+    <small class="muted">{{ _('log_retention_hint') }}</small></h3>
+  <div class="console" id="task-console" data-task-id="{{ task.id }}">
+    {% for log in logs %}
+    <div class="line lv-{{ log.level }}"><span class="t">{{ log.time }}</span>
+      {{ log.message }}{% if log.detail %} <span class="d">{{ log.detail }}</span>{% endif %}</div>
+    {% endfor %}
+  </div>
+  <button class="btn btn-sm btn-ghost mt" id="task-logs-history" type="button"
+    {% if log_total <= logs|length %}hidden{% endif %}>
+    {{ _('log_show_history') }} ({{ log_total }})</button>
+</div>
+{% endif %}
+
+<p><a href="{{ url_for('user.history') }}">&larr; {{ _('nav_history') }}</a></p>
+{% endblock %}

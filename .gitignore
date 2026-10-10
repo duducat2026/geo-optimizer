@@ -1,0 +1,69 @@
+# ============================================================
+# GEO-Optimizer .gitignore
+# ============================================================
+
+# ---- Python ----
+__pycache__/
+*.py[cod]
+*.so
+*.egg-info/
+.eggs/
+build/
+dist/
+
+# ---- 虚拟环境 ----
+.venv/
+venv/
+env/
+
+# ---- 测试与工具缓存 ----
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+htmlcov/
+
+# ---- 环境与凭据：示例文件公开，真实配置一律不入库 ----
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+# 本地/部署机密配置
+geo_config.local.yaml
+deployment/settings.py
+deployment/mcp.env
+/config.json
+mcp_server/config.json
+docs/geo-skill/config.json
+
+# ---- 运行期数据与产物 ----
+output/
+data/
+tmp/
+logs/
+*.log
+temp/
+
+# ---- 备份与归档 ----
+backups/
+*.bak
+*.bak.*
+*.backup
+*.backup.*
+*.bundle
+*.dump
+*.sql.gz
+
+# ---- IDE / 工具 / OS ----
+.idea/
+.vscode/
+.qoder/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db

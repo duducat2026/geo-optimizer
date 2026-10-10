@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+{% block content %}
+<h2 class="page-title">{{ _('dashboard') }}</h2>
+
+<div class="grid grid-3">
+  {% if current_user.is_admin %}
+    <div class="card stat">
+      <div class="num">{{ stats.users }}</div>
+      <div class="label">{{ _('nav_users') }}</div>
+    </div>
+    <div class="card stat">
+      <div class="num">{{ stats.tasks }}</div>
+      <div class="label">{{ _('nav_sites') }}</div>
+    </div>
+    <div class="card stat">
+      <div class="num">{{ stats.plans }}</div>
+      <div class="label">{{ _('download_plan') }}</div>
+    </div>
+  {% else %}
+    <div class="card stat">
+      <div class="num">{{ stats.tasks }}</div>
+      <div class="label">{{ _('nav_history') }}</div>
+    </div>
+    <div class="card stat">
+      <div class="num">{{ stats.quota_left }}</div>
+      <div class="label">{{ _('quota_left') }}</div>
+    </div>
+    <div class="card stat">
+      <a class="btn" href="{{ url_for('user.eval_new') }}">{{ _('nav_new_eval') }}</a>
+    </div>
+  {% endif %}
+</div>
+
+<div class="card">
+  {% if current_user.is_admin %}
+  {# 管理员控制台总体概览仅展示最近 5 条，全部记录去站点总览页 #}
+  <h3>{{ _('overview_title') }}
+    <a class="muted" style="font-size:.8em;font-weight:normal"
+       href="{{ url_for('admin.sites') }}">{{ _('view_all') }} &rarr;</a>
+  </h3>
+  {% else %}
+  {# 普通用户控制台仅展示最近 10 条，全部记录去评估历史页 #}
+  <h3>{{ _('history_title') }}
+    <a class="muted" style="font-size:.8em;font-weight:normal"
+       href="{{ url_for('user.history') }}">{{ _('view_all') }} &rarr;</a>
+  </h3>
+  {% endif %}
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>{{ _('target_url') }}</th>
+          <th>{{ _('task_type') }}</th>
+          <th>{{ _('status') }}</th>
+          <th>{{ _('score') }}</th>
+          <th>{{ _('created_at') }}</th>
+          <th>{{ _('actions') }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for task in recent %}
+        <tr>
+          <td>{{ task.target_url }}</td>
+          <td>{{ _('type_plan') if task.type == 'plan' else _('type_eval') }}</td>
+          <td>
+            {% if task.status == 'completed' %}<span class="badge ok">{{ _('task_completed') }}</span>
+            {% elif task.status == 'failed' %}<span class="badge err">{{ _('task_failed') }}</span>
+            {% else %}<span class="badge warn">{{ _('generating') }}</span>{% endif %}
+          </td>
+          <td>{{ '%.1f'|format(task.overall_score) if task.overall_score else '-' }}</td>
+          <td>{{ task.created_at | localtime }}</td>
+          <td>
+            <a href="{{ url_for('user.eval_detail', task_id=task.id) }}">{{ _('view') }}</a>
+            {% if not current_user.is_admin %}
+            &nbsp;
+            <form method="post" style="display:inline"
+                  action="{{ url_for('user.history_delete', task_id=task.id, next='dashboard') }}"
+                  data-confirm="{{ _('confirm_delete') }}">
+              <button class="btn btn-sm btn-danger" type="submit">{{ _('delete') }}</button>
+            </form>
+            {% endif %}
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="6" class="muted">{{ _('no_data') }}</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,43 @@
+# ============================================================
+# GEO-Optimizer Systemd 服务
+# 安装: cp geotool.service /etc/systemd/system/geotool.service
+#       systemctl daemon-reload && systemctl enable geotool
+# ============================================================
+
+[Unit]
+Description=GEO-Optimizer Platform (geotool)
+After=network.target mysqld.service
+Wants=mysqld.service
+
+[Service]
+Type=simple
+User=root
+Group=root
+WorkingDirectory=/opt/geotool/current
+Environment="PATH=/opt/geotool/current/.venv/bin:/usr/local/bin:/usr/bin"
+Environment="GEO_HOST=0.0.0.0"
+Environment="GEO_PORT=5000"
+
+# 使用 gunicorn 运行 Flask 应用
+ExecStart=/opt/geotool/current/.venv/bin/gunicorn \
+    --bind 0.0.0.0:5000 \
+    --workers 2 \
+    --threads 4 \
+    --timeout 300 \
+    --access-logfile /var/log/geotool/access.log \
+    --error-logfile /var/log/geotool/error.log \
+    "geo_optimizer.web.portal.app:create_app()"
+
+# 重启策略
+Restart=on-failure
+RestartSec=5
+StartLimitInterval=60
+StartLimitBurst=3
+
+# 日志
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=geotool
+
+[Install]
+WantedBy=multi-user.target

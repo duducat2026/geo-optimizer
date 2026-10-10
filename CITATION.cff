@@ -1,0 +1,28 @@
+cff-version: 1.2.0
+title: "GEO-Optimizer: Generative Engine Optimization Toolchain"
+message: "If you use this software, please cite it as below."
+type: software
+authors:
+  - name: "GEO-Optimizer"
+    email: "52859273@qq.com"
+abstract: >-
+  GEO-Optimizer is an open-source toolchain for Generative Engine
+  Optimization (GEO), helping websites achieve better citation rankings
+  across 11 AI search engines including ChatGPT Search, Perplexity,
+  Google AI Overviews, Doubao, Qwen, and more. Features include
+  dual-engine scoring, LLM-powered content generation, multi-platform
+  export, and continuous ranking monitoring.
+version: 1.0.0
+date-released: "2026-07-26"
+license: AGPL-3.0-or-later
+repository-code: "https://github.com/geo-optimizer/geo-optimizer"
+url: "https://geo-optimizer.github.io/geo-optimizer/"
+keywords:
+  - GEO
+  - generative engine optimization
+  - AI search
+  - SEO
+  - structured data
+  - LLM
+programming-languages:
+  - Python

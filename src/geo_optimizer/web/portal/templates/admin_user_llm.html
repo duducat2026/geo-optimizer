@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% block content %}
+<h2 class="page-title">{{ _('admin_user_llm_title') }}</h2>
+
+<!-- 检索表单 -->
+<div class="card">
+  <form method="get" class="inline-form">
+    <input type="text" name="username" value="{{ f_username }}" placeholder="{{ _('username') }}">
+    <input type="date" name="date_from" value="{{ f_date_from }}" title="{{ _('llm_cfg_date_from') }}">
+    <span class="muted">~</span>
+    <input type="date" name="date_to" value="{{ f_date_to }}" title="{{ _('llm_cfg_date_to') }}">
+    <select name="per_page">
+      {% for c in per_page_choices %}
+      <option value="{{ c }}" {{ 'selected' if per_page == c else '' }}>{{ c }} / {{ _('per_page') }}</option>
+      {% endfor %}
+    </select>
+    <button class="btn" type="submit">{{ _('filter') }}</button>
+  </form>
+</div>
+
+<!-- 配置列表 -->
+<div class="card">
+  <p class="muted">{{ _('total_count') }} {{ total }}</p>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>{{ _('username') }}</th>
+          <th>{{ _('llm_cfg_provider') }}</th>
+          <th>{{ _('llm_cfg_name') }}</th>
+          <th>API Key</th>
+          <th>Base URL</th>
+          <th>{{ _('model') }}</th>
+          <th>{{ _('status') }}</th>
+          <th>{{ _('created_at') }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for cfg, uname in rows %}
+        <tr>
+          <td>{{ uname }}</td>
+          <td><span class="badge {{ 'ok' if cfg.is_active else 'muted' }}">{{ cfg.provider_label }}</span></td>
+          <td>{{ cfg.name or '-' }}</td>
+          <td><code>{{ cfg.api_key_masked }}</code></td>
+          <td class="td-url">{{ cfg.base_url or '-' }}</td>
+          <td>{{ cfg.model or 'qwen-plus' }}</td>
+          <td>
+            {% if cfg.is_active %}
+              <span class="badge ok">{{ _('llm_cfg_active') }}</span>
+            {% else %}
+              <span class="badge muted">{{ _('llm_cfg_inactive') }}</span>
+            {% endif %}
+          </td>
+          <td>{{ cfg.created_at | localtime('%Y-%m-%d %H:%M') }}</td>
+        </tr>
+        {% else %}
+        <tr><td colspan="8" class="muted">{{ _('no_data') }}</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 分页 -->
+  {% if pages > 1 %}
+  <div class="pagination">
+    {% if page > 1 %}
+    <a href="?page={{ page - 1 }}&per_page={{ per_page }}&username={{ f_username }}&date_from={{ f_date_from }}&date_to={{ f_date_to }}">{{ _('prev_page') }}</a>
+    {% endif %}
+    <span>{{ page }} / {{ pages }}</span>
+    {% if page < pages %}
+    <a href="?page={{ page + 1 }}&per_page={{ per_page }}&username={{ f_username }}&date_from={{ f_date_from }}&date_to={{ f_date_to }}">{{ _('next_page') }}</a>
+    {% endif %}
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

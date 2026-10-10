@@ -1,0 +1,35 @@
+# GEO-Optimizer Dependencies
+
+# Core
+pyyaml>=6.0
+pydantic>=2.0
+
+# Crawler
+playwright>=1.40.0
+
+# HTTP (fallback for non-JS pages)
+httpx>=0.25.0
+
+# LLM (百炼 / OpenAI-compatible)
+dashscope>=1.14.0
+openai>=1.0.0
+
+# Reporting
+rich>=13.0
+fpdf2>=2.7
+
+# Web 平台（可选）
+flask>=3.0
+flask-sqlalchemy>=3.1
+flask-login>=0.6
+pymysql>=1.1
+pyecharts>=2.0
+beautifulsoup4>=4.12
+
+# MCP 服务端（可选，streamable-HTTP 模式）
+# v2 SDK：入口为 mcp.server.mcpserver.MCPServer；[cli] 附带 mcp dev/mcp run 调试工具
+mcp[cli]>=2.1,<3
+
+# Testing
+pytest>=7.0
+pytest-asyncio>=0.23.0

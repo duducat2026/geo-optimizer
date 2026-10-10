@@ -1,0 +1,141 @@
+# ============================================================
+# GEO (Generative Engine Optimization) 配置
+# 覆盖：国内5引擎 + 国外6引擎 = 11引擎全球覆盖
+# ============================================================
+
+# --- 目标网站 ---
+target:
+  url: "https://example.com"          # 主站URL
+  urls: []                             # 可选：多页面URL列表
+  crawl_depth: 3                       # 抓取深度
+  max_pages: 50                        # 最大抓取页面数
+
+# --- 关键词（双语） ---
+keywords:
+  zh:                                  # 中文关键词
+    primary: []                        # 核心关键词
+    longtail: []                       # 长尾关键词
+    scenarios: []                      # 生活场景词
+  en:                                  # English keywords
+    primary: []
+    longtail: []
+    scenarios: []
+
+# --- LLM API（兼容 OpenAI 格式） ---
+# 算力方案可选：
+#   1. 百炼按量付费 (bailian)
+#      base_url: https://dashscope.aliyuncs.com/compatible-mode/v1
+#      api_key: sk- 开头的百炼通用 API Key，按 Token 用量计费
+#   2. Token Plan 团队版 (token_plan)
+#      base_url: https://token-plan.cn-beijing.maas.aliyuncs.com/compatible-mode/v1
+#      api_key: sk-sp- 开头的 Token Plan 专属 Key，Credits 统一抵扣
+#   3. 自定义 MaaS 端点 (custom)
+#      base_url: 任意兼容 OpenAI 协议的端点
+# 注意：API Key 与 Base URL 必须配套使用，不可混用！
+# Web 平台部署时可在管理员配置页面切换算力方案，无需修改此文件。
+# 安全提示：请勿把真实 Key 提交到版本库。留空 api_key 时会自动读取环境变量
+#   DASHSCOPE_API_KEY（见 src/geo_optimizer/config.py）；也可复制本文件为
+#   geo_config.local.yaml（已在 .gitignore 中）后填入私有 Key。
+llm:
+  api_key: ""                          # 填你的 Key，或留空改用环境变量 DASHSCOPE_API_KEY
+  base_url: "https://dashscope.aliyuncs.com/compatible-mode/v1"
+  model: "qwen-plus"                   # 推荐 qwen-plus / qwen-max / qwen3.7-max
+  temperature: 0.7
+  max_tokens: 4096
+
+# --- 国内引擎 ---
+engines_cn:
+  - name: "豆包"
+    vendor: "字节跳动"
+    focus: ["结构化", "口语化", "生活场景"]
+    enabled: true
+  - name: "通义千问"
+    vendor: "阿里巴巴"
+    focus: ["权威来源", "数据支撑"]
+    enabled: true
+  - name: "混元"
+    vendor: "腾讯"
+    focus: ["微信生态", "公众号格式"]
+    enabled: true
+  - name: "智谱清言"
+    vendor: "智谱AI"
+    focus: ["学术引用", "专业深度"]
+    enabled: true
+  - name: "DeepSeek"
+    vendor: "深度求索"
+    focus: ["精准回答", "代码块"]
+    enabled: true
+
+# --- 国外引擎 ---
+engines_en:
+  - name: "Google AI Overviews"
+    vendor: "Google"
+    focus: ["E-E-A-T", "权威引用", "Schema"]
+    enabled: true
+  - name: "ChatGPT Search"
+    vendor: "OpenAI"
+    focus: ["自然对话体", "长尾问答"]
+    enabled: true
+  - name: "Perplexity"
+    vendor: "Perplexity AI"
+    focus: ["来源链接", "引用标注"]
+    enabled: true
+  - name: "Claude"
+    vendor: "Anthropic"
+    focus: ["深度分析", "结构化输出"]
+    enabled: true
+  - name: "Copilot"
+    vendor: "Microsoft"
+    focus: ["Bing索引", "权威背书"]
+    enabled: true
+  - name: "Gemini"
+    vendor: "Google"
+    focus: ["多模态", "Google生态"]
+    enabled: true
+
+# --- 多平台导出 ---
+platforms:
+  cn:
+    - name: "微信公众号"
+      format: "wechat"
+      enabled: true
+    - name: "知乎"
+      format: "zhihu"
+      enabled: true
+    - name: "头条号"
+      format: "toutiao"
+      enabled: true
+  en:
+    - name: "Medium"
+      format: "medium"
+      enabled: true
+    - name: "Quora"
+      format: "quora"
+      enabled: true
+    - name: "Reddit"
+      format: "reddit"
+      enabled: true
+
+# --- 输出 ---
+output:
+  dir: "./output"                      # 输出目录
+  faq_count_zh: 10                     # 中文FAQ数量
+  faq_count_en: 10                     # 英文FAQ数量
+  report_format: "markdown"            # 报告格式: markdown / html
+  language: ["zh-CN", "en-US"]         # 输出语言
+
+# --- 监控 ---
+monitor:
+  check_interval_days: 7              # 检测间隔（天）
+  engines_to_check: "all"             # 检测哪些引擎
+  notify_on_change: true              # 变化时通知
+
+# --- Playwright（JS渲染） ---
+playwright:
+  headless: true
+  timeout_ms: 30000
+  # 主导航等待策略：domcontentloaded 对重埋点站点（腾讯云/淘宝等）最稳健，
+  # networkidle 会因持续后台请求超时而抓取失败。
+  wait_until: "domcontentloaded"
+  # 主导航成功后额外等待动态内容的短窗口（毫秒）；超时不视为失败。设为 0 可关闭。
+  settle_ms: 3000

@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+{% set L = current_locale %}
+{% block content %}
+<h2 class="page-title">{{ _('guide_title') }}</h2>
+
+<div class="card">
+  <h3>{{ _('guide_portals') }}</h3>
+  <table class="table">
+    <thead><tr>
+      <th>{{ _('guide_platform') }}</th><th>{{ _('guide_entry') }}</th><th>{{ _('detail') }}</th>
+    </tr></thead>
+    <tbody>
+      {% for row in g.PORTALS %}
+      <tr>
+        <td><strong>{{ row.platform[L] }}</strong></td>
+        <td><a href="{{ row.url }}" target="_blank" rel="noopener">
+          {{ row.entry[L] if row.entry is mapping else row.entry }}</a></td>
+        <td class="muted">{{ row.note[L] }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<div class="card">
+  <h3>{{ _('guide_no_portal') }}</h3>
+  <table class="table">
+    <thead><tr>
+      <th>{{ _('guide_platform') }}</th><th>{{ _('guide_mechanism') }}</th><th>{{ _('detail') }}</th>
+    </tr></thead>
+    <tbody>
+      {% for row in g.NO_PORTAL %}
+      <tr>
+        <td><strong>{{ row.platform[L] }}</strong></td>
+        <td>{{ row.mechanism[L] }}</td>
+        <td class="muted">{{ row.note[L] }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<div class="card">
+  <h3>{{ _('guide_robots') }}</h3>
+  <pre class="code-block">{{ g.ROBOTS_TXT }}</pre>
+</div>
+
+<div class="card">
+  <h3>{{ _('guide_priority') }}</h3>
+  <ol>
+    {% for step in g.PRIORITY_STEPS %}<li>{{ step[L] }}</li>{% endfor %}
+  </ol>
+</div>
+
+<h3 class="page-title">{{ _('guide_cn_models') }}</h3>
+<div class="grid" style="grid-template-columns: 1fr 1fr;">
+  {% for m in g.CN_MODELS %}
+  <div class="card">
+    <h3>{{ m.name[L] }} <small class="muted">{{ m.company[L] }}</small></h3>
+    <p><strong>{{ _('guide_index_source') }}:</strong> {{ m.index_source[L] }}</p>
+    <p><strong>{{ _('guide_entry') }}:</strong> {{ m.portal[L] }}</p>
+    <p><strong>{{ _('guide_key_actions') }}:</strong></p>
+    <ul class="list-plain">
+      {% for a in m.actions %}<li>{{ a[L] }}</li>{% endfor %}
+    </ul>
+    <p class="muted"><strong>{{ _('guide_crawler') }}:</strong> {{ m.crawler[L] }}</p>
+    {% if m.tip %}<div class="flash info">{{ m.tip[L] }}</div>{% endif %}
+  </div>
+  {% endfor %}
+</div>
+
+<div class="card">
+  <h3>{{ _('guide_checklist') }}</h3>
+  <table class="table">
+    <thead><tr>
+      <th>{{ _('priority') }}</th><th>{{ _('guide_platform') }}</th>
+      <th>{{ _('actions') }}</th><th>{{ _('guide_effect') }}</th>
+    </tr></thead>
+    <tbody>
+      {% for row in g.CHECKLIST %}
+      <tr>
+        <td><span class="badge prio-{{ row.level }}">{{ _('prio_' + row.level) }}</span></td>
+        <td>{{ row.platform[L] }}</td>
+        <td>{{ row.action[L] }}</td>
+        <td class="muted">{{ row.effect[L] }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  <p class="muted mt">{{ g.CORE_LOGIC[L] }}</p>
+</div>
+{% endblock %}

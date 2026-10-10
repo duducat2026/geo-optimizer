@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% block content %}
+<h2 class="page-title">{{ item.title }}</h2>
+
+<div class="card">
+  <p>
+    <span class="badge prio-{{ item.priority }}">{{ _('prio_' + item.priority) }}</span>
+    <span class="badge muted">
+      {{ _('source_llm') if item.source == 'llm' else _('source_template') }}</span>
+    <span class="muted">{{ _('updated_at') }}:
+      {{ item.updated_at | localtime }}</span>
+  </p>
+
+  <form method="post">
+    <textarea name="content" class="editor" rows="24" spellcheck="false">{{ item.content }}</textarea>
+    <div class="mt">
+      <button class="btn" type="submit">{{ _('save') }}</button>
+      <a class="btn btn-ghost" href="{{ url_for('plan.item_download', item_id=item.id) }}">
+        {{ _('download_item') }}</a>
+      <a class="btn btn-ghost" href="{{ url_for('plan.item_list', task_id=item.task_id) }}">
+        {{ _('back') }}</a>
+    </div>
+  </form>
+</div>
+
+{% if artifact_specs %}
+<div class="card">
+  <h3>{{ _('artifact_section') }}</h3>
+  <p class="muted">{{ _('artifact_hint') }}</p>
+  <table class="table">
+    <tbody>
+      {% for spec in artifact_specs %}
+      {% set art = artifacts.get(spec.kind) %}
+      <tr>
+        <td>
+          {{ spec.title.get(current_locale, spec.title['zh']) }}
+          <span class="muted" style="font-size:.8em">({{ spec.filename }})</span>
+        </td>
+        <td>
+          {% if art %}
+          <span class="badge muted">{{ _('source_' + art.source) }}</span>
+          <span class="muted">{{ art.updated_at | localtime }}</span>
+          {% else %}
+          <span class="muted">{{ _('artifact_not_generated') }}</span>
+          {% endif %}
+        </td>
+        <td>
+          {% if art %}
+          <a class="btn btn-sm" href="{{ url_for('plan.artifact_edit', artifact_id=art.id) }}">
+            {{ _('edit_item') }}</a>
+          <a class="btn btn-sm btn-ghost" href="{{ url_for('plan.artifact_download', artifact_id=art.id) }}">
+            {{ _('artifact_download') }}</a>
+          {% endif %}
+          <form method="post" style="display:inline"
+                action="{{ url_for('plan.artifact_generate', item_id=item.id, kind=spec.kind) }}">
+            <button class="btn btn-sm {{ 'btn-ghost' if art else '' }}" type="submit">
+              {{ _('artifact_regenerate') if art else _('artifact_generate') }}</button>
+          </form>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endif %}
+{% endblock %}

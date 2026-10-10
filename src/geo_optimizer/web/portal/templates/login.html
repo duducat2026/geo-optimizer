@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="{{ current_locale }}">
+<head>
+  <meta charset="UTF-8">
+  {% include "gtm_head.html" %}
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ _('login_title') }}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
+</head>
+<body>
+  {% include "gtm_body.html" %}
+  <div class="login-wrap">
+    <div class="login-card">
+      <div class="auth-brand">
+        <span class="auth-logo">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+               stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="12" cy="12" r="10"></circle>
+            <path d="M2 12h20"></path>
+            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+          </svg>
+        </span>
+        <div>
+          <h1>{{ _('app_name') }}</h1>
+          <p class="sub">{{ _('login_title') }}</p>
+        </div>
+      </div>
+
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% for category, message in messages %}
+          <div class="flash {{ category }}">{{ message }}</div>
+        {% endfor %}
+      {% endwith %}
+
+      <form method="post">
+        <div class="form-row">
+          <label for="username">{{ _('username') }}</label>
+          <input type="text" id="username" name="username" required autofocus
+                 autocomplete="username">
+        </div>
+        <div class="form-row">
+          <label for="password">{{ _('password') }}</label>
+          <input type="password" id="password" name="password" required
+                 autocomplete="current-password">
+        </div>
+        <button class="btn btn-auth" type="submit">{{ _('login') }}</button>
+      </form>
+
+      <div class="login-lang">
+        <a href="{{ url_for('auth.register') }}">{{ _('register') }}</a>
+        <span class="sep">·</span>
+        <a href="{{ url_for('main.index') }}">{{ _('back_to_home') }}</a>
+        <span class="sep">·</span>
+        <a href="{{ url_for('main.switch_lang', code='zh') }}"
+           class="{{ 'on' if current_locale == 'zh' else '' }}">中文</a>
+        <span class="sep">·</span>
+        <a href="{{ url_for('main.switch_lang', code='en') }}"
+           class="{{ 'on' if current_locale == 'en' else '' }}">English</a>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

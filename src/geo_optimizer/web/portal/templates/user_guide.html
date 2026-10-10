@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="{{ current_locale }}">
+<head>
+  <meta charset="UTF-8">
+  {% include "gtm_head.html" %}
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ _('app_name') }} — {{ _('land_res_guide_t') }}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/docs.css') }}">
+</head>
+<body>
+  {% include "gtm_body.html" %}
+  <div class="read-progress" aria-hidden="true"></div>
+  <div class="doc-bg" aria-hidden="true"></div>
+
+  <!-- ── 顶栏 ── -->
+  <header class="doc-topbar">
+    <a class="doc-brand" href="{{ url_for('main.index') }}">
+      <span class="glyph" aria-hidden="true"></span>{{ _('app_name') }}
+    </a>
+    <span class="doc-crumb">docs <span class="sep">/</span> <b>user-guide</b></span>
+    <span class="spacer"></span>
+    <span class="lang-mini">
+      <a href="{{ url_for('main.switch_lang', code='zh') }}" class="{{ 'on' if current_locale == 'zh' else '' }}">中文</a>
+      <a href="{{ url_for('main.switch_lang', code='en') }}" class="{{ 'on' if current_locale == 'en' else '' }}">EN</a>
+    </span>
+    {% if current_user.is_authenticated %}
+      <a class="t-link" href="{{ url_for('main.dashboard') }}">{{ _('dashboard') }}</a>
+    {% else %}
+      <a class="t-btn" href="{{ url_for('auth.login') }}">{{ _('login') }}</a>
+    {% endif %}
+  </header>
+
+  <div class="doc-shell">
+    <!-- ── 左侧目录 ── -->
+    <aside class="doc-toc">
+      <p class="toc-label">CONTENTS</p>
+      <ul>
+        <li><a href="#s1"><span class="n">01</span>平台简介</a></li>
+        <li><a href="#s2"><span class="n">02</span>快速开始</a></li>
+        <li>
+          <a href="#s3"><span class="n">03</span>控制台操作指南</a>
+          <ul class="sub">
+            <li><a href="#s3-2">新建评估</a></li>
+            <li><a href="#s3-3">任务详情</a></li>
+            <li><a href="#s3-5">改进方案与产出物</a></li>
+            <li><a href="#s3-6">API 密钥管理</a></li>
+            <li><a href="#s3-7">算力配置</a></li>
+          </ul>
+        </li>
+        <li>
+          <a href="#s4"><span class="n">04</span>开放 API 调用</a>
+          <ul class="sub">
+            <li><a href="#s4-2">端点一览</a></li>
+            <li><a href="#s4-3">完整调用流程</a></li>
+            <li><a href="#s4-5">错误码</a></li>
+          </ul>
+        </li>
+        <li><a href="#s5"><span class="n">05</span>CLI 命令行工具</a></li>
+        <li><a href="#s6"><span class="n">06</span>Skill 客户端</a></li>
+        <li><a href="#s7"><span class="n">07</span>常见问题</a></li>
+      </ul>
+      <div class="toc-cta">
+        <p>需要原始 Markdown 文件？</p>
+        <a href="{{ url_for('main.user_guide_raw') }}">user-guide.md →</a>
+      </div>
+    </aside>
+
+    <!-- ── 文章主体 ── -->
+    <main class="doc-main">
+      <div class="doc-header rv">
+        <p class="doc-kicker">USER GUIDE · 用户使用指南</p>
+        <h1>GEO-Optimizer<br>用户使用指南</h1>
+        <p class="doc-lede">本指南帮助您通过 <strong>Web 控制台</strong> 和 <strong>开放 API</strong> 两种方式，完成网站 GEO（生成式引擎优化）评估与优化。</p>
+        <div class="doc-meta">
+          <span>VERSION <b>1.0.0</b></span>
+          <span>UPDATED <b>2026-07-29</b></span>
+          <span>PLATFORM <b>1.0.0</b></span>
+        </div>
+      </div>
+
+      <!-- 01 平台简介 -->
+      <section class="doc-sec rv" id="s1">
+        <h2><span class="no">01</span>平台简介</h2>
+        <p>GEO-Optimizer 是面向 AI 搜索引擎的生成式引擎优化（GEO）平台，核心能力：</p>
+        <div class="cap-grid">
+          <div class="cap"><b><i>🕸️</i>网站爬取分析</b><span>Playwright 驱动，支持 JS 渲染</span></div>
+          <div class="cap"><b><i>📊</i>双引擎 GEO 评分</b><span>国内 5 维 + 国外 6 维评分体系</span></div>
+          <div class="cap"><b><i>🛰️</i>11 引擎全覆盖</b><span>豆包、千问、混元、智谱、DeepSeek + Google AI、ChatGPT、Perplexity、Claude、Copilot、Gemini</span></div>
+          <div class="cap"><b><i>✨</i>LLM 内容优化</b><span>自动生成 FAQ、Schema、多平台适配内容</span></div>
+          <div class="cap"><b><i>📤</i>多平台导出</b><span>微信公众号、知乎、头条号、Medium、Quora、Reddit</span></div>
+          <div class="cap"><b><i>📈</i>排名监控</b><span>持续跟踪 AI 引擎引用排名</span></div>
+        </div>
+        <h3>用户角色</h3>
+        <p>普通用户可使用以下功能：评估任务、历史管理、报告下载、API 密钥管理、算力配置。管理员功能（系统配置、用户管理、审计等）不在本指南范围内。</p>
+      </section>
+
+      <!-- 02 快速开始 -->
+      <section class="doc-sec rv" id="s2">
+        <h2><span class="no">02</span>快速开始</h2>
+        <div class="steps">
+          <div class="step">
+            <span class="no">1</span>
+            <div>
+              <h4>访问平台</h4>
+              <p>浏览器打开平台地址（默认 <code>http://localhost:5001</code>），进入登录页。</p>
+            </div>
+          </div>
+          <div class="step">
+            <span class="no">2</span>
+            <div>
+              <h4>登录</h4>
+              <p>使用管理员分配的账号和密码登录；如尚未拥有账号，请联系管理员创建。</p>
+            </div>
+          </div>
+          <div class="step">
+            <span class="no">3</span>
+            <div>
+              <h4>发起第一次评估</h4>
+              <p>点击「新建评估」→ 输入目标 URL（如 <code>https://example.com</code>）→ 选择任务类型 → 提交。</p>
+            </div>
+          </div>
+          <div class="step">
+            <span class="no">4</span>
+            <div>
+              <h4>查看结果</h4>
+              <p>等待 30–120 秒，任务完成后查看评分与报告；<strong>plan</strong> 类型还可下载改进方案 ZIP。</p>
+            </div>
+          </div>
+        </div>
+        <div class="callout tip">
+          <span class="ico">✓</span>
+          <div><strong>任务类型怎么选？</strong>「仅评估（eval）」获取 GEO 评分报告；「评估+方案（plan）」额外生成改进方案、多平台内容与 ZIP 打包下载。</div>
+        </div>
+      </section>
+
+      <!-- 03 控制台操作指南 -->
+      <section class="doc-sec rv" id="s3">
+        <h2><span class="no">03</span>控制台操作指南</h2>
+
+        <h3 id="s3-1">控制台首页（Dashboard）</h3>
+        <p>登录后进入个人控制台，展示：</p>
+        <ul>
+          <li><strong>个人概览</strong>：我的任务数、剩余配额</li>
+          <li><strong>评估历史</strong>：最近 10 条评估任务，可快速查看详情或重试</li>
+        </ul>
+
+        <h3 id="s3-2">新建评估（/eval/new）</h3>
+        <div class="tbl-wrap"><table>
+          <thead><tr><th>字段</th><th>说明</th></tr></thead>
+          <tbody>
+            <tr><td><strong>目标 URL</strong></td><td>必填，待评估的网站地址</td></tr>
+            <tr><td><strong>任务类型</strong></td><td><code>eval</code>（仅评分）/ <code>plan</code>（评分+方案）</td></tr>
+          </tbody>
+        </table></div>
+        <div class="callout warn">
+          <span class="ico">!</span>
+          <div><strong>限制条件：</strong>配额不足时无法提交（联系管理员增加）；每用户最多 3 个并发任务；全局并发已满时任务自动排队；需有可用算力配置（用户侧或平台侧）。</div>
+        </div>
+
+        <h3 id="s3-3">任务详情（/eval/&lt;task_id&gt;）</h3>
+        <p>任务提交后自动跳转至详情页，展示：</p>
+        <ul>
+          <li><strong>状态进度条</strong>：queued → running → completed / failed</li>
+          <li><strong>实时进度</strong>：百分比 + 当前步骤描述</li>
+          <li><strong>处理日志</strong>：时间倒排，每 3 秒自动刷新</li>
+          <li><strong>评分结果</strong>：完成后展示总分、国内/国外分、各维度明细</li>
+        </ul>
+        <div class="tbl-wrap"><table>
+          <thead><tr><th>任务状态</th><th>可用操作</th></tr></thead>
+          <tbody>
+            <tr><td><span class="st-badge warn">排队中 / 运行中</span></td><td>终止任务</td></tr>
+            <tr><td><span class="st-badge err">失败 / 已取消</span></td><td>重试</td></tr>
+            <tr><td><span class="st-badge ok">已完成（plan）</span></td><td>查看改进方案 · 下载报告 ZIP</td></tr>
+          </tbody>
+        </table></div>
+
+        <h3 id="s3-4">评估历史（/history）</h3>
+        <ul>
+          <li>分页展示所有历史任务（支持 10 / 20 / 50 条每页）</li>
+          <li>每条记录显示：URL、类型、状态、评分、创建时间</li>
+          <li>操作：查看详情、删除（级联删除方案、产出物、日志）</li>
+        </ul>
+
+        <h3 id="s3-5">改进方案（/plan/&lt;task_id&gt;）</h3>
+        <p>plan 类型任务完成后生成改进方案：</p>
+        <ul>
+          <li><strong>方案条目列表</strong>：按优先级分组（high / mid / low）</li>
+          <li><strong>条目标签</strong>：标注适配的 AI 引擎（如「适配：豆包、ChatGPT」）</li>
+          <li><strong>条目编辑</strong>：点击条目可在线编辑内容</li>
+        </ul>
+        <h4>产出物管理（/plan/&lt;task_id&gt;/artifacts）</h4>
+        <ul>
+          <li>查看已生成的产出物（FAQ、Schema、多平台文章等）</li>
+          <li>在线编辑产出物内容，新增生成尚未创建的产出物</li>
+          <li>单项下载 / 整体打包下载</li>
+        </ul>
+
+        <h3 id="s3-6">API 密钥管理（/api-keys）</h3>
+        <div class="steps">
+          <div class="step"><span class="no">1</span><div><h4>生成密钥</h4><p>填写名称 + 有效期（1–3650 天）→ 获得 <code>geo_</code> 开头的密钥。</p></div></div>
+          <div class="step"><span class="no">2</span><div><h4>查看列表</h4><p>显示所有密钥的前缀、名称、调用次数、状态，支持行内复制与重新生成。</p></div></div>
+          <div class="step"><span class="no">3</span><div><h4>停用 / 删除</h4><p>点击「停用」使密钥立即失效；「删除」将移除密钥及其调用日志。</p></div></div>
+          <div class="step"><span class="no">4</span><div><h4>调用明细</h4><p>点击密钥查看分页调用日志。</p></div></div>
+        </div>
+        <div class="callout warn">
+          <span class="ico">!</span>
+          <div>密钥明文仅在生成 / 重新生成时展示一次，请立即复制保存。如遗忘，请重新生成或删除旧密钥后新建。</div>
+        </div>
+
+        <h3 id="s3-7">算力配置（/llm-config）</h3>
+        <p>用户可配置自己的 LLM 算力：</p>
+        <div class="tbl-wrap"><table>
+          <thead><tr><th>算力方案</th><th>Base URL</th><th>API Key 格式</th></tr></thead>
+          <tbody>
+            <tr><td><strong>百炼按量付费</strong></td><td><code>https://dashscope.aliyuncs.com/compatible-mode/v1</code></td><td><code>sk-</code> 开头</td></tr>
+            <tr><td><strong>Token Plan 团队版</strong></td><td><code>https://token-plan.cn-beijing.maas.aliyuncs.com/compatible-mode/v1</code></td><td><code>sk-sp-</code> 开头</td></tr>
+            <tr><td><strong>自定义 MaaS</strong></td><td>自行填写</td><td>视端点而定</td></tr>
+          </tbody>
+        </table></div>
+        <p><strong>操作步骤：</strong>「新增配置」→ 选择方案 → 填写 API Key → 保存 → 「激活」设为当前算力 → 「测试」验证连通性。支持多条配置，同一时间仅一条激活。</p>
+        <div class="callout info">
+          <span class="ico">i</span>
+          <div><strong>提示：</strong>如果平台未提供统一算力，您需要在此配置并激活自己的算力方案后方可使用评估功能。若平台已开通算力权限，系统会自动使用，无需额外配置。</div>
+        </div>
+
+        <h3 id="s3-8">优化指导（/guide）</h3>
+        <p>内置 AI 引擎收录指南：各引擎站长平台提交入口（Google / Bing / Perplexity / 百度 / 神马）、国内 AI 模型收录机制（千问 / 豆包 / 混元 / 文心）、robots.txt 配置示例与实操优先级清单。</p>
+
+        <h3 id="s3-9">语言切换</h3>
+        <p>支持中 / 英双语：点击顶部导航栏语言切换按钮（<code>/lang/zh</code> 或 <code>/lang/en</code>），设置会保存到用户偏好。</p>
+      </section>
+
+      <!-- 04 开放 API 调用指南 -->
+      <section class="doc-sec rv" id="s4">
+        <h2><span class="no">04</span>开放 API 调用指南</h2>
+
+        <h3 id="s4-1">认证</h3>
+        <p>所有 API 请求需携带 Bearer Token，密钥在控制台「API 密钥管理」页面生成：</p>
+        <div class="code-panel">
+          <div class="code-head">
+            <span class="dots"><i></i><i></i><i></i></span>
+            <span class="lang-tag">http</span>
+            <button class="code-copy" data-copied="✓ 已复制">copy</button>
+          </div>
+          <pre>Authorization: Bearer geo_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx</pre>
+        </div>
+
+        <h3 id="s4-2">API 端点一览</h3>
+        <div class="ep-list">
+          <div class="ep-row"><span class="mth post">POST</span><span class="path">/api/v1/tasks</span><span class="desc">提交评估任务</span></div>
+          <div class="ep-row"><span class="mth get">GET</span><span class="path">/api/v1/tasks/{task_id}</span><span class="desc">查询任务状态</span></div>
+          <div class="ep-row"><span class="mth get">GET</span><span class="path">/api/v1/tasks/{task_id}/result</span><span class="desc">获取任务结果</span></div>
+          <div class="ep-row"><span class="mth get">GET</span><span class="path">/api/v1/tasks/{task_id}/download</span><span class="desc">下载报告 ZIP</span></div>
+          <div class="ep-row"><span class="mth post">POST</span><span class="path">/api/v1/tasks/{task_id}/cancel</span><span class="desc">终止任务</span></div>
+          <div class="ep-row"><span class="mth get">GET</span><span class="path">/api/v1/usage</span><span class="desc">API 调用统计</span></div>
+        </div>
+
+        <h3 id="s4-3">完整调用流程</h3>
+        <h4>Step 1 · 提交任务</h4>
+        <div class="code-panel">
+          <div class="code-head">
+            <span class="dots"><i></i><i></i><i></i></span>
+            <span class="lang-tag">bash</span>
+            <button class="code-copy" data-copied="✓ 已复制">copy</button>
+          </div>
+          <pre><span class="p">$</span> curl -X POST http://localhost:5001/api/v1/tasks \
+    -H <span class="s">"Authorization: Bearer geo_your_key"</span> \
+    -H <span class="s">"Content-Type: application/json"</span> \
+    -d <span class="s">'{"target_url": "https://example.com", "task_type": "plan"}'</span></pre>
+        </div>
+        <div class="code-panel">
+          <div class="code-head">
+            <span class="dots"><i></i><i></i><i></i></span>
+            <span class="lang-tag">json</span><span class="fname">响应 · 201</span>
+            <button class="code-copy" data-copied="✓ 已复制">copy</button>
+          </div>
+          <pre>{
+  <span class="k">"task_id"</span>: <span class="s">"67dcbe3c-6bfb-47fa-8856-de467a39cefc"</span>,
+  <span class="k">"status"</span>: <span class="s">"pending"</span>,
+  <span class="k">"target_url"</span>: <span class="s">"https://example.com"</span>,
+  <span class="k">"task_type"</span>: <span class="s">"plan"</span>,
+  <span class="k">"queued"</span>: <span class="n">false</span>,
+  <span class="k">"message"</span>: <span class="s">"Task submitted successfully"</span>
+}</pre>
+        </div>
+
+        <h4>Step 2 · 轮询状态</h4>
+        <div class="code-panel">
+          <div class="code-head">
+            <span class="dots"><i></i><i></i><i></i></span>
+            <span class="lang-tag">bash</span>
+            <button class="code-copy" data-copied="✓ 已复制">copy</button>
+          </div>
+          <pre><span class="p">$</span> curl http://localhost:5001/api/v1/tasks/67dcbe3c-... \
+    -H <span class="s">"Authorization: Bearer geo_your_key"</span></pre>
+        </div>
+        <p>状态流转：</p>
+        <div class="flow">
+          <span class="node">queued</span><span class="arr">→</span>
+          <span class="node">pending</span><span class="arr">→</span>
+          <span class="node">running</span><span class="arr">→</span>
+          <span class="node end-ok">completed</span>
+          <span class="arr">/</span>
+          <span class="node end-bad">failed</span>
+          <span class="arr">/</span>
+          <span class="node end-bad">cancelled</span>
+        </div>
+
+        <h4>Step 3 · 获取结果（仅 completed 状态）</h4>
+        <div class="code-panel">
+          <div class="code-head">
+            <span class="dots"><i></i><i></i><i></i></span>
+            <span class="lang-tag">json</span><span class="fname">GET /tasks/{id}/result · 200</span>
+            <button class="code-copy" data-copied="✓ 已复制">copy</button>
+          </div>
+          <pre>{
+  <span class="k">"task_id"</span>: <span class="s">"67dcbe3c-..."</span>,
+  <span class="k">"status"</span>: <span class="s">"completed"</span>,
+  <span class="k">"overall_score"</span>: <span class="n">72.5</span>,
+  <span class="k">"result"</span>: {
+    <span class="k">"url"</span>: <span class="s">"https://example.com"</span>,
+    <span class="k">"title"</span>: <span class="s">"Example Domain"</span>,
+    <span class="k">"engine_scores"</span>: [...],
+    <span class="k">"strengths"</span>: [...],
+    <span class="k">"weaknesses"</span>: [...]
+  },
+  <span class="k">"download_url"</span>: <span class="s">"/api/v1/tasks/67dcbe3c-.../download"</span>
+}</pre>
+        </div>
+
+        <h4>Step 4 · 下载报告</h4>
+        <div class="code-panel">
+          <div class="code-head">
+            <span class="dots"><i></i><i></i><i></i></span>
+            <span class="lang-tag">bash</span>
+            <button class="code-copy" data-copied="✓ 已复制">copy</button>
+          </div>
+          <pre><span class="p">$</span> curl -o report.zip http://localhost:5001/api/v1/tasks/67dcbe3c-.../download \
+    -H <span class="s">"Authorization: Bearer geo_your_key"</span></pre>
+        </div>
+        <p>ZIP 包内容（plan 类型）：</p>
+        <ul>
+          <li><code>geo_analysis_report.md</code> — 完整分析报告</li>
+          <li><code>schema.jsonld.html</code> — Schema.org 结构化数据</li>
+          <li><code>wechat_*.md</code> / <code>zhihu_*.md</code> / <code>toutiao_*.md</code> — 国内平台文章</li>
+          <li><code>medium_*.md</code> / <code>quora_*.md</code> / <code>reddit_*.md</code> — 国际平台文章</li>
+          <li><code>plan_items/</code> — 分优先级改进方案</li>
+        </ul>
+
+        <h3 id="s4-4">终止任务</h3>
+        <div class="code-panel">
+          <div class="code-head">
+            <span class="dots"><i></i><i></i><i></i></span>
+            <span class="lang-tag">bash</span>
+            <button class="code-copy" data-copied="✓ 已复制">copy</button>
+          </div>
+          <pre><span class="p">$</span> curl -X POST http://localhost:5001/api/v1/tasks/67dcbe3c-.../cancel \
+    -H <span class="s">"Authorization: Bearer geo_your_key"</span></pre>
+        </div>
+
+        <h3 id="s4-5">错误码</h3>
+        <div class="tbl-wrap"><table>
+          <thead><tr><th>HTTP 状态</th><th>error 字段</th><th>说明</th></tr></thead>
+          <tbody>
+            <tr><td><span class="st-badge warn">400</span></td><td><code>invalid_params</code></td><td>缺少 target_url</td></tr>
+            <tr><td><span class="st-badge err">401</span></td><td><code>missing_token</code> / <code>invalid_token</code></td><td>密钥缺失或无效</td></tr>
+            <tr><td><span class="st-badge err">403</span></td><td><code>quota_exceeded</code></td><td>配额用尽</td></tr>
+            <tr><td><span class="st-badge err">403</span></td><td><code>forbidden</code></td><td>无权访问他人任务</td></tr>
+            <tr><td><span class="st-badge warn">404</span></td><td><code>not_found</code></td><td>任务不存在</td></tr>
+            <tr><td><span class="st-badge warn">409</span></td><td><code>invalid_state</code></td><td>无法取消已完成的任务</td></tr>
+            <tr><td><span class="st-badge err">429</span></td><td><code>concurrent_limit</code></td><td>并发任务数超限</td></tr>
+          </tbody>
+        </table></div>
+
+        <h3 id="s4-6">Python 客户端</h3>
+        <div class="code-panel">
+          <div class="code-head">
+            <span class="dots"><i></i><i></i><i></i></span>
+            <span class="lang-tag">python</span><span class="fname">client/geo_api_client.py</span>
+            <button class="code-copy" data-copied="✓ 已复制">copy</button>
+          </div>
+          <pre><span class="k">from</span> client.geo_api_client <span class="k">import</span> GeoApiClient
+
+<span class="k">with</span> GeoApiClient(<span class="s">"http://localhost:5001"</span>, <span class="s">"geo_your_key"</span>) <span class="k">as</span> client:
+    <span class="c"># 提交任务</span>
+    task_id = client.submit_task(<span class="s">"https://example.com"</span>, task_type=<span class="s">"plan"</span>)
+
+    <span class="c"># 等待完成（自动轮询）</span>
+    result = client.wait_for_completion(task_id, timeout=<span class="n">600</span>)
+    print(f<span class="s">"GEO Score: {result['overall_score']}"</span>)
+
+    <span class="c"># 下载报告</span>
+    client.download(task_id, <span class="s">"./output/report.zip"</span>)
+
+    <span class="c"># 查看用量</span>
+    usage = client.get_usage()
+    print(f<span class="s">"Total calls: {usage['total_calls']}"</span>)</pre>
+        </div>
+      </section>
+
+      <!-- 05 CLI 命令行工具 -->
+      <section class="doc-sec rv" id="s5">
+        <h2><span class="no">05</span>CLI 命令行工具</h2>
+        <p>适合本地开发调试，无需启动 Web 服务。</p>
+        <h3>安装</h3>
+        <div class="code-panel">
+          <div class="code-head">
+            <span class="dots"><i></i><i></i><i></i></span>
+            <span class="lang-tag">bash</span>
+            <button class="code-copy" data-copied="✓ 已复制">copy</button>
+          </div>
+          <pre><span class="p">$</span> pip install -e .
+<span class="c"># 或未安装时使用: python -m geo_optimizer &lt;子命令&gt;</span></pre>
+        </div>
+        <h3>命令一览</h3>
+        <div class="tbl-wrap"><table>
+          <thead><tr><th>命令</th><th>说明</th></tr></thead>
+          <tbody>
+            <tr><td><code>geo-optimizer analyze &lt;URL&gt;</code></td><td>爬取 + GEO 分析</td></tr>
+            <tr><td><code>geo-optimizer optimize &lt;URL&gt;</code></td><td>完整优化 pipeline</td></tr>
+            <tr><td><code>geo-optimizer export &lt;URL&gt;</code></td><td>优化 + 多平台导出</td></tr>
+            <tr><td><code>geo-optimizer report &lt;URL&gt;</code></td><td>生成分析报告</td></tr>
+            <tr><td><code>geo-optimizer faq &lt;URL&gt;</code></td><td>仅生成 FAQ</td></tr>
+            <tr><td><code>geo-optimizer schema &lt;URL&gt;</code></td><td>仅生成 Schema</td></tr>
+            <tr><td><code>geo-optimizer monitor &lt;URL&gt;</code></td><td>引擎引用监控</td></tr>
+          </tbody>
+        </table></div>
+        <h3>环境变量</h3>
+        <div class="tbl-wrap"><table>
+          <thead><tr><th>变量</th><th>说明</th></tr></thead>
+          <tbody>
+            <tr><td><code>DASHSCOPE_API_KEY</code></td><td>百炼 API Key</td></tr>
+            <tr><td><code>GEO_CONFIG</code></td><td>配置文件路径（默认 <code>geo_config.yaml</code>）</td></tr>
+          </tbody>
+        </table></div>
+        <h3>示例</h3>
+        <div class="code-panel">
+          <div class="code-head">
+            <span class="dots"><i></i><i></i><i></i></span>
+            <span class="lang-tag">bash</span>
+            <button class="code-copy" data-copied="✓ 已复制">copy</button>
+          </div>
+          <pre><span class="c"># 完整分析并导出</span>
+<span class="p">$</span> export DASHSCOPE_API_KEY=sk-xxxxx
+<span class="p">$</span> geo-optimizer export https://example.com
+
+<span class="c"># 仅评分</span>
+<span class="p">$</span> geo-optimizer analyze https://example.com</pre>
+        </div>
+      </section>
+
+      <!-- 06 Skill 客户端 -->
+      <section class="doc-sec rv" id="s6">
+        <h2><span class="no">06</span>Skill 客户端（AI Agent 集成）</h2>
+        <p>面向 AI Agent 的封装客户端，支持一键完成「提交 → 等待 → 结果 → 下载」全流程。</p>
+        <h3>获取 Skill 文件（公开访问，无需登录）</h3>
+        <div class="ep-list">
+          <div class="ep-row"><span class="mth get">GET</span><span class="path">/geo-skill</span><span class="desc">SKILL.md 规范文件（ClawHub 格式）</span></div>
+          <div class="ep-row"><span class="mth get">GET</span><span class="path">/geo-skill/scripts/geo_skill_client.py</span><span class="desc">Skill 客户端源码</span></div>
+        </div>
+        <h3>使用方式</h3>
+        <div class="code-panel">
+          <div class="code-head">
+            <span class="dots"><i></i><i></i><i></i></span>
+            <span class="lang-tag">python</span>
+            <button class="code-copy" data-copied="✓ 已复制">copy</button>
+          </div>
+          <pre><span class="k">import</span> sys
+sys.path.insert(<span class="n">0</span>, <span class="s">"docs/geo-skill/scripts"</span>)
+<span class="k">from</span> geo_skill_client <span class="k">import</span> GeoSkillClient
+
+client = GeoSkillClient(<span class="s">"http://localhost:5001"</span>, <span class="s">"geo_your_key"</span>)
+
+<span class="c"># 提交 → 等待完成 → 下载报告</span>
+task_id = client.submit(<span class="s">"https://example.com"</span>, task_type=<span class="s">"plan"</span>)
+result = client.wait_and_get_result(task_id, timeout=<span class="n">600</span>)
+print(f<span class="s">"Score: {result['overall_score']}"</span>)
+client.download(task_id, <span class="s">"./output/report.zip"</span>)</pre>
+        </div>
+        <h3>CLI 模式</h3>
+        <div class="code-panel">
+          <div class="code-head">
+            <span class="dots"><i></i><i></i><i></i></span>
+            <span class="lang-tag">bash</span>
+            <button class="code-copy" data-copied="✓ 已复制">copy</button>
+          </div>
+          <pre><span class="c"># 提交任务（立即返回，打印评估网站/任务 ID/预计时长，不做定时轮询）</span>
+<span class="p">$</span> python docs/geo-skill/scripts/geo_skill_client.py \
+    --base-url http://localhost:5001 \
+    --api-key geo_your_key \
+    --url https://example.com
+
+<span class="c"># 列出最近提交的任务（ID/评估网站/状态），供澄清要查哪个任务</span>
+<span class="p">$</span> python docs/geo-skill/scripts/geo_skill_client.py --api-key geo_your_key --recent
+
+<span class="c"># 查询指定任务进展（状态+已产生日志；已完成时返回结果与免登录下载链接）</span>
+<span class="p">$</span> python docs/geo-skill/scripts/geo_skill_client.py --api-key geo_your_key --progress &lt;task_id&gt; --after-id 0
+
+<span class="c"># 已完成任务直接下载压缩包</span>
+<span class="p">$</span> python docs/geo-skill/scripts/geo_skill_client.py --api-key geo_your_key --progress &lt;task_id&gt; --output ./report.zip
+
+<span class="c"># 交互终端阻塞式完整流程（--wait）</span>
+<span class="p">$</span> python docs/geo-skill/scripts/geo_skill_client.py --api-key geo_your_key --url https://example.com --wait --output ./report.zip
+
+<span class="c"># 查询已有任务状态（凭据亦可通过 GEO_API_KEY 环境变量或 config.json 提供）</span>
+<span class="p">$</span> python docs/geo-skill/scripts/geo_skill_client.py --api-key geo_your_key --status &lt;task_id&gt;</pre>
+        </div>
+      </section>
+
+      <!-- 07 常见问题 -->
+      <section class="doc-sec rv" id="s7">
+        <h2><span class="no">07</span>常见问题</h2>
+
+        <details class="faq" open>
+          <summary>提交任务时提示「配额不足」怎么办？</summary>
+          <p class="ans">联系管理员在「用户管理」中增加您的评估配额。</p>
+        </details>
+        <details class="faq">
+          <summary>任务一直处于 queued 状态？</summary>
+          <p class="ans">全局并发已满，任务自动排队。等待其他任务完成后自动启动。</p>
+        </details>
+        <details class="faq">
+          <summary>任务失败如何重试？</summary>
+          <p class="ans">在任务详情页点击「重试」按钮，或调用 API <code>POST /api/v1/tasks/{id}/cancel</code> 后重新提交。</p>
+        </details>
+        <details class="faq">
+          <summary>API 密钥忘记了怎么办？</summary>
+          <p class="ans">密钥明文仅在生成时展示一次。如遗忘，请在密钥管理页「重新生成」（原地重置）或删除旧密钥后新建。</p>
+        </details>
+        <details class="faq">
+          <summary>如何选择算力方案？</summary>
+          <p class="ans">如果平台未提供统一算力，您需要自行配置算力方案（/llm-config）。支持百炼按量付费、Token Plan 团队版和自定义 MaaS 三种方案，配置后激活即可使用。若平台已开通算力权限，系统会自动使用平台算力，无需额外配置。</p>
+        </details>
+        <details class="faq">
+          <summary>eval 和 plan 任务有什么区别？</summary>
+          <p class="ans"><code>eval</code> 仅输出评分报告；<code>plan</code> 在评分基础上额外生成改进方案、FAQ、Schema、六平台适配文章，并打包为 ZIP 下载。</p>
+        </details>
+        <details class="faq">
+          <summary>支持哪些 AI 引擎的评估？</summary>
+          <p class="ans">国内 5 个（豆包、通义千问、混元、智谱清言、DeepSeek）+ 国际 6 个（Google AI、ChatGPT Search、Perplexity、Claude、Copilot、Gemini），共 11 个。</p>
+        </details>
+        <details class="faq">
+          <summary>平台支持哪些语言？</summary>
+          <p class="ans">中文和英文双语。通过顶部导航栏切换，设置会保存到用户偏好。</p>
+        </details>
+      </section>
+    </main>
+  </div>
+
+  <footer class="doc-footer">
+    <div class="inner">
+      <span>GEO OPTIMIZER · USER GUIDE v1.0.0</span>
+      <span>
+        <a href="{{ url_for('main.user_guide_raw') }}">Markdown 源文件</a>
+        &nbsp;·&nbsp;
+        <a href="{{ url_for('main.index') }}">{{ _('back_to_home') }}</a>
+      </span>
+    </div>
+  </footer>
+
+  <script src="{{ url_for('static', filename='js/docs.js') }}"></script>
+</body>
+</html>

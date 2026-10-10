@@ -1,0 +1,283 @@
+{% extends "base.html" %}
+{% block content %}
+<h2 class="page-title">{{ _('sys_config_title') }}</h2>
+
+<!-- 平台算力方案列表 -->
+<div class="card" style="max-width: 960px;">
+  <h3>{{ _('llm_provider_section') }}</h3>
+  <p class="muted" style="margin-bottom:12px;">{{ _('sys_llm_desc') }}</p>
+
+  {% if not sys_llm_configs and legacy_masked %}
+  <div class="flash warn" style="background:#fffbeb;border-color:#f59e0b;">
+    ⚠️ {{ _('sys_llm_legacy_hint') }} <code>{{ legacy_masked }}</code>
+  </div>
+  {% endif %}
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>{{ _('llm_cfg_provider') }}</th>
+          <th>{{ _('llm_cfg_name') }}</th>
+          <th>API Key</th>
+          <th>Base URL</th>
+          <th>{{ _('model') }}</th>
+          <th>{{ _('status') }}</th>
+          <th>{{ _('actions') }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for cfg in sys_llm_configs %}
+        <tr>
+          <td><span class="badge {{ 'ok' if cfg.is_active else 'muted' }}">{{ cfg.provider_label }}</span></td>
+          <td>{{ cfg.name or '-' }}</td>
+          <td><code>{{ cfg.api_key_masked }}</code></td>
+          <td class="td-url">{{ cfg.base_url or '-' }}</td>
+          <td>{{ cfg.model or 'qwen-plus' }}</td>
+          <td>
+            {% if cfg.is_active %}
+              <span class="badge ok">{{ _('llm_cfg_active') }}</span>
+            {% else %}
+              <span class="badge muted">{{ _('llm_cfg_inactive') }}</span>
+            {% endif %}
+          </td>
+          <td class="td-actions">
+            {% if not cfg.is_active %}
+            <form method="post" action="{{ url_for('admin.sys_llm_activate', config_id=cfg.id) }}" style="display:inline">
+              <button class="btn btn-sm" type="submit">{{ _('llm_cfg_set_active') }}</button>
+            </form>
+            {% endif %}
+            <button class="btn btn-sm" type="button"
+                    data-id="{{ cfg.id }}" data-provider="{{ cfg.provider }}"
+                    data-name="{{ cfg.name }}" data-base-url="{{ cfg.base_url }}"
+                    data-model="{{ cfg.model }}"
+                    onclick="editPlan(this)">{{ _('edit_item') }}</button>
+            <form method="post" action="{{ url_for('admin.sys_llm_test', config_id=cfg.id) }}" style="display:inline"
+                  class="llm-test-form">
+              <button class="btn btn-sm" type="submit">{{ _('llm_cfg_test') }}</button>
+            </form>
+            <form method="post" action="{{ url_for('admin.sys_llm_delete', config_id=cfg.id) }}" style="display:inline"
+                  onsubmit="return confirm('{{ _('confirm_delete') }}')">
+              <button class="btn btn-sm btn-danger" type="submit">{{ _('delete') }}</button>
+            </form>
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="7" class="muted">{{ _('no_data') }}</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- 新增/编辑平台算力方案 -->
+<div class="card" style="max-width: 720px; margin-top: 20px;" id="plan-form-card">
+  <h3>{{ _('llm_cfg_add') }}</h3>
+  <div class="flash warn" id="editing-hint" style="display:none;background:#fffbeb;border-color:#f59e0b;">
+    ✏️ {{ _('llm_cfg_editing') }}: <strong id="editing-name"></strong>
+    <button class="btn btn-sm" type="button" onclick="cancelEdit()" style="margin-left:8px;">{{ _('cancel') }}</button>
+  </div>
+  <form method="post" action="{{ url_for('admin.sys_llm_save') }}">
+    <input type="hidden" name="id" value="0" id="cfg_id">
+    <div class="form-row">
+      <label for="cfg_provider">{{ _('llm_cfg_provider') }}</label>
+      <select id="cfg_provider" name="provider" onchange="onProviderChange()">
+        {% for code, p in providers.items() %}
+        <option value="{{ code }}">{{ p.label }}</option>
+        {% endfor %}
+      </select>
+      <small class="muted" id="provider-hint"></small>
+    </div>
+    <div class="form-row">
+      <label for="cfg_name">{{ _('llm_cfg_name') }}</label>
+      <input type="text" id="cfg_name" name="name" placeholder="{{ _('llm_cfg_name_ph') }}" maxlength="64">
+    </div>
+    <div class="form-row">
+      <label for="cfg_api_key">API Key</label>
+      <input type="password" id="cfg_api_key" name="api_key" placeholder="sk-... 或 sk-sp-...">
+      <small class="muted">{{ _('llm_cfg_key_keep') }}</small>
+    </div>
+    <div class="form-row">
+      <label for="cfg_base_url">Base URL</label>
+      <input type="text" id="cfg_base_url" name="base_url" placeholder="https://...">
+      <small class="muted">{{ _('llm_cfg_url_hint') }}</small>
+    </div>
+    <div class="form-row">
+      <label for="cfg_model">{{ _('model') }}</label>
+      <input type="text" id="cfg_model" name="model" placeholder="qwen-plus / qwen-max / qwen3.7-max">
+    </div>
+    <button class="btn" type="submit">{{ _('save') }}</button>
+  </form>
+</div>
+
+<!-- 模型参数与下载限制（全局配置，与具体方案无关） -->
+<div class="card" style="max-width: 720px; margin-top: 20px;">
+  <h3>{{ _('llm_params') }}</h3>
+  <form method="post">
+    <div class="grid" style="grid-template-columns: 1fr 1fr;">
+      <div class="form-row">
+        <label for="temperature">temperature</label>
+        <input type="text" id="temperature" name="temperature" value="{{ values.temperature }}">
+      </div>
+      <div class="form-row">
+        <label for="max_tokens">max_tokens</label>
+        <input type="text" id="max_tokens" name="max_tokens" value="{{ values.max_tokens }}">
+      </div>
+    </div>
+
+    <hr style="margin:16px 0;border:none;border-top:1px solid #e5e7eb;">
+    <h3>{{ _('download_section') }}</h3>
+    <div class="form-row">
+      <label for="download_limit">{{ _('download_limit') }}</label>
+      <input type="number" id="download_limit" name="download_limit" min="0"
+             value="{{ values.download_limit }}" style="max-width:160px;">
+      <small class="muted">{{ _('download_limit_hint') }}</small>
+    </div>
+
+    <button class="btn" type="submit">{{ _('save') }}</button>
+  </form>
+</div>
+
+<div class="card" style="max-width: 960px; margin-top: 20px;">
+  <h3>{{ _('llm_provider_guide') }}</h3>
+  <table style="width:100%;font-size:13px;">
+    <thead>
+      <tr><th>{{ _('llm_provider') }}</th><th>API Key {{ _('format') }}</th><th>Base URL</th><th>{{ _('billing') }}</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>百炼按量付费</td>
+        <td><code>sk-</code> {{ _('prefix') }}</td>
+        <td><code>https://dashscope.aliyuncs.com/compatible-mode/v1</code></td>
+        <td>{{ _('billing_token') }}</td>
+      </tr>
+      <tr>
+        <td>Token Plan {{ _('team') }}</td>
+        <td><code>sk-sp-</code> {{ _('prefix') }}</td>
+        <td><code>https://token-plan.cn-beijing.maas.aliyuncs.com/compatible-mode/v1</code></td>
+        <td>Credits {{ _('billing_credits') }}</td>
+      </tr>
+      <tr>
+        <td>{{ _('custom') }} MaaS</td>
+        <td>-</td>
+        <td>{{ _('custom_fill') }}</td>
+        <td>-</td>
+      </tr>
+    </tbody>
+  </table>
+  <p class="muted" style="margin-top:12px;font-size:12px;">
+    {{ _('llm_provider_warning') }}
+  </p>
+</div>
+
+<!-- 调用测试结果浮层 -->
+<div id="test-modal" class="modal-mask" style="display:none;">
+  <div class="modal-box">
+    <div id="test-modal-body"></div>
+    <div style="text-align:right;margin-top:12px;">
+      <button class="btn btn-sm" type="button" onclick="closeTestModal()">{{ _('close') }}</button>
+    </div>
+  </div>
+</div>
+<style>
+.modal-mask{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:1000;align-items:center;justify-content:center;}
+.modal-box{background:#fff;border-radius:10px;max-width:680px;width:92%;max-height:80vh;overflow:auto;padding:20px 24px;box-shadow:0 10px 40px rgba(0,0,0,.25);}
+.modal-box ol{line-height:2;margin:8px 0 0 0;}
+</style>
+
+<script>
+const PROVIDERS = {{ providers | tojson }};
+function onProviderChange() {
+  const code = document.getElementById('cfg_provider').value;
+  const p = PROVIDERS[code] || {};
+  document.getElementById('provider-hint').textContent = p.hint || '';
+  document.getElementById('cfg_base_url').value =
+    (code !== 'custom' && p.openai_base_url) ? p.openai_base_url : '';
+}
+onProviderChange();
+
+/* ---- 编辑方案：回填表单（API Key 留空表示保留原 Key） ---- */
+function editPlan(btn) {
+  var d = btn.dataset;
+  document.getElementById('cfg_id').value = d.id;
+  document.getElementById('cfg_provider').value = d.provider;
+  document.getElementById('provider-hint').textContent =
+    (PROVIDERS[d.provider] || {}).hint || '';
+  document.getElementById('cfg_name').value = d.name;
+  document.getElementById('cfg_base_url').value = d.baseUrl;
+  document.getElementById('cfg_model').value = d.model;
+  document.getElementById('cfg_api_key').value = '';
+  document.getElementById('editing-name').textContent = d.name || d.provider;
+  document.getElementById('editing-hint').style.display = 'block';
+  document.getElementById('plan-form-card').scrollIntoView({ behavior: 'smooth' });
+}
+function cancelEdit() {
+  document.getElementById('cfg_id').value = '0';
+  document.getElementById('cfg_name').value = '';
+  document.getElementById('cfg_model').value = '';
+  document.getElementById('cfg_api_key').value = '';
+  document.getElementById('editing-hint').style.display = 'none';
+  onProviderChange();
+}
+
+/* ---- 调用测试：fetch 提交，结果弹出浮层展示 ---- */
+function esc(s) {
+  var d = document.createElement('div');
+  d.textContent = (s === null || s === undefined) ? '' : String(s);
+  return d.innerHTML;
+}
+function closeTestModal() {
+  document.getElementById('test-modal').style.display = 'none';
+}
+function showTestModal(d) {
+  var color = d.ok ? '#16a34a' : '#dc2626';
+  var model = d.model_responded || d.model_requested;
+  var html = '<h3 style="margin:0 0 4px 0;border-left:4px solid ' + color + ';padding-left:10px;">'
+    + (d.ok ? '✅ ' : '❌ ') + '{{ _("llm_cfg_test_process") }}'
+    + ' — <span class="badge ' + (d.ok ? 'ok' : 'muted') + '">' + esc(d.provider_label) + '</span>'
+    + (d.ok ? ' <span class="badge ok">' + esc(model) + '</span>' : '')
+    + '</h3>';
+  if (d.config_name) {
+    html += '<p class="muted" style="margin-top:0;">{{ _("llm_cfg_name") }}: ' + esc(d.config_name)
+      + ' · API Key: <code>' + esc(d.api_key_masked) + '</code></p>';
+  }
+  html += '<ol>'
+    + '<li>{{ _("llm_cfg_test_step_init") }} — {{ _("llm_cfg_test_endpoint") }}: <code>' + esc(d.endpoint) + '</code></li>'
+    + '<li>{{ _("llm_cfg_test_step_send") }} — {{ _("llm_cfg_test_model_req") }}: <code>' + esc(d.model_requested)
+    + '</code>，messages: <code>[{"role":"user","content":"Hi"}]</code>，max_tokens: <code>5</code></li>';
+  if (d.ok) {
+    html += '<li>{{ _("llm_cfg_test_step_recv") }} — {{ _("llm_cfg_test_elapsed") }}: <code>' + esc(d.elapsed_ms) + ' ms</code>'
+      + (d.model_responded ? ' · {{ _("llm_cfg_test_model_resp") }}: <code>' + esc(d.model_responded) + '</code>' : '')
+      + (d.usage ? ' · {{ _("llm_cfg_test_usage") }}: <code>prompt ' + esc(d.usage.prompt)
+          + ' + completion ' + esc(d.usage.completion) + ' = ' + esc(d.usage.total) + '</code>' : '')
+      + '</li>'
+      + '<li>{{ _("llm_cfg_test_reply") }}: <code>' + esc(d.reply || '-') + '</code></li>';
+  } else {
+    html += '<li>{{ _("llm_cfg_test_step_err") }} — {{ _("llm_cfg_test_elapsed") }}: <code>' + esc(d.elapsed_ms) + ' ms</code></li>'
+      + '<li>{{ _("llm_cfg_test_error") }}: <code style="color:#dc2626;">' + esc(d.error) + '</code></li>';
+  }
+  html += '</ol>';
+  document.getElementById('test-modal-body').innerHTML = html;
+  document.getElementById('test-modal').style.display = 'flex';
+}
+// 拦截测试表单提交，改走 fetch（无 JS 时回退到原重定向流程）
+document.querySelectorAll('.llm-test-form').forEach(function (form) {
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
+    var btn = form.querySelector('button');
+    var oldText = btn.textContent;
+    btn.disabled = true;
+    btn.textContent = '{{ _("llm_cfg_testing") }}';
+    fetch(form.action, { method: 'POST', headers: { 'X-Requested-With': 'fetch' } })
+      .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
+      .then(showTestModal)
+      .catch(function () { alert('{{ _("llm_cfg_test_fail") }}'); })
+      .finally(function () { btn.disabled = false; btn.textContent = oldText; });
+  });
+});
+// 点击遮罩关闭浮层
+document.getElementById('test-modal').addEventListener('click', function (e) {
+  if (e.target === this) closeTestModal();
+});
+</script>
+{% endblock %}
