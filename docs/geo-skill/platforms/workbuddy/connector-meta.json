@@ -1,0 +1,22 @@
+{
+  "name": "GEO-Optimizer",
+  "name_en": "GEO-Optimizer",
+  "name_zh": "GEO优化器",
+  "description": "GEO analysis tool for AI search engine optimization",
+  "description_en": "GEO (Generative Engine Optimization) analysis tool that evaluates website visibility in AI search engines like ChatGPT, Perplexity, and Qwen, providing optimization recommendations and improvement plans.",
+  "description_zh": "GEO（生成式引擎优化）分析工具，评估网站在 ChatGPT、Perplexity、通义千问等 AI 搜索引擎中的可见性，提供优化建议和改进方案。",
+  "source": "geo-optimizer",
+  "type": "mcp",
+  "version": "1.0.0",
+  "auth_mode": "token",
+  "examples_zh": [
+    "帮我分析 example.com 在 AI 搜索引擎中的表现",
+    "查看我最近的 GEO 评估任务",
+    "获取任务的优化建议报告"
+  ],
+  "examples_en": [
+    "Analyze example.com visibility in AI search engines",
+    "List my recent GEO evaluation tasks",
+    "Get the optimization report for my task"
+  ]
+}

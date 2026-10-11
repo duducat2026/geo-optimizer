@@ -515,20 +515,6 @@ def api_key_generate():
                            new_key=raw_key, regenerated_key_id=None)
 
 
-@bp.route("/api-keys/<int:key_id>/revoke", methods=["POST"])
-@login_required
-def api_key_revoke(key_id):
-    """停用 API 密钥。"""
-    key = db.session.get(ApiKey, key_id)
-    if not key or key.user_id != current_user.id:
-        abort(404)
-    key.is_active = False
-    db.session.commit()
-    audit.record("api_key_revoke", target=key.name or key.key_prefix)
-    flash(_("api_key_revoked"), "info")
-    return redirect(url_for("user.api_keys"))
-
-
 @bp.route("/api-keys/<int:key_id>/regenerate", methods=["POST"])
 @login_required
 def api_key_regenerate(key_id):
@@ -627,10 +613,30 @@ def _regenerate_key_inplace(key) -> str:
 @bp.route("/api-keys/<int:key_id>/export-skill", methods=["POST"])
 @login_required
 def api_key_export_skill(key_id):
-    """导出符合 ClawHub skill 规范的技能包 ZIP（默认含 API Key 配置）。"""
+    """导出技能包 ZIP：platform 为空/generic 走通用包（含明文密钥），
+    否则导出对应平台发布变体（不含明文密钥）。"""
+    from geo_optimizer.web.portal.user import platform_export
+
     key = db.session.get(ApiKey, key_id)
     if not key or key.user_id != current_user.id:
         abort(404)
+
+    platform = (request.form.get("platform") or "").strip().lower()
+    if platform and platform != "generic":
+        try:
+            platform_export.normalize_platform(platform)
+        except ValueError:
+            abort(400)
+        zip_bytes = platform_export.build_skill_zip(platform)
+        audit.record("api_key_export_skill", target=key.name or key.key_prefix,
+                     detail=f"platform={platform}")
+        import io
+        return send_file(
+            io.BytesIO(zip_bytes),
+            mimetype="application/zip",
+            as_attachment=True,
+            download_name=platform_export.zip_name(platform),
+        )
 
     # 明文优先取表单传入（创建/重生成时），其次取落库明文
     raw_key = (request.form.get("raw_key") or "").strip() or key.key_plaintext or None
@@ -642,7 +648,8 @@ def api_key_export_skill(key_id):
     # config.json 的 key_name 用当前登录用户名填充，便于识别归属
     zip_bytes = _build_skill_zip(key.key_prefix, raw_key, current_user.username)
 
-    audit.record("api_key_export_skill", target=key.name or key.key_prefix)
+    audit.record("api_key_export_skill", target=key.name or key.key_prefix,
+                 detail="platform=generic")
 
     import io
     from datetime import datetime
@@ -660,11 +667,32 @@ def api_key_export_skill(key_id):
 @bp.route("/api-keys/<int:key_id>/export-mcp", methods=["POST"])
 @login_required
 def api_key_export_mcp(key_id):
-    """导出 MCP 服务端本地部署包 ZIP（stdio，与 Skill 导出共用同一把密钥）。"""
+    """导出 MCP 包 ZIP：platform 为空/generic 走本地 stdio 部署包（含明文密钥），
+    否则导出对应平台 MCP 配置/连接器变体（密钥为 ${GEO_API_KEY} 占位符）。"""
+    from geo_optimizer.web.portal.user import platform_export
+
     key = db.session.get(ApiKey, key_id)
     if not key or key.user_id != current_user.id:
         abort(404)
-    # 与 Skill 导出共用同一密钥：表单 raw_key 优先，其次落库明文，都无则原地重生成
+
+    platform = (request.form.get("platform") or "").strip().lower()
+    if platform and platform != "generic":
+        try:
+            platform_export.normalize_platform(platform)
+        except ValueError:
+            abort(400)
+        zip_bytes = platform_export.build_mcp_zip(platform)
+        audit.record("api_key_export_mcp", target=key.name or key.key_prefix,
+                     detail=f"platform={platform}")
+        import io
+        return send_file(
+            io.BytesIO(zip_bytes),
+            mimetype="application/zip",
+            as_attachment=True,
+            download_name=platform_export.zip_name(platform),
+        )
+
+    # 与 Skill 导出共用同一把密钥：表单 raw_key 优先，其次落库明文，都无则原地重生成
     raw_key = (request.form.get("raw_key") or "").strip() or key.key_plaintext or None
     if not raw_key:
         raw_key = _regenerate_key_inplace(key)
@@ -672,7 +700,8 @@ def api_key_export_mcp(key_id):
                      detail="auto on mcp export (no plaintext)")
     zip_bytes = _build_mcp_zip(key.key_prefix, raw_key, current_user.username)
 
-    audit.record("api_key_export_mcp", target=key.name or key.key_prefix)
+    audit.record("api_key_export_mcp", target=key.name or key.key_prefix,
+                 detail="platform=generic")
 
     import io
     from datetime import datetime

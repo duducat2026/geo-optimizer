@@ -85,24 +85,11 @@
           <td>{{ key.last_used_at | localtime if key.last_used_at else '-' }}</td>
           <td style="white-space:nowrap;">
             <a href="{{ url_for('user.api_key_logs', key_id=key.id) }}">{{ _('api_key_view_logs') }}</a>
-            &nbsp;
-            <form method="post" style="display:inline" action="{{ url_for('user.api_key_export_skill', key_id=key.id) }}">
-              <button class="btn btn-sm" type="submit" title="{{ _('api_key_export_skill_hint') }}">{{ _('api_key_export_skill') }}</button>
-            </form>
-            &nbsp;
-            <form method="post" style="display:inline" action="{{ url_for('user.api_key_export_mcp', key_id=key.id) }}">
-              <button class="btn btn-sm" type="submit" title="{{ _('api_key_export_mcp_hint') }}">{{ _('api_key_export_mcp') }}</button>
-            </form>
             {% if key.is_active %}
             &nbsp;
             <form method="post" style="display:inline" action="{{ url_for('user.api_key_regenerate', key_id=key.id) }}"
                   data-confirm="{{ _('confirm_regenerate') }}">
               <button class="btn btn-sm" type="submit">{{ _('api_key_regenerate') }}</button>
-            </form>
-            &nbsp;
-            <form method="post" style="display:inline" action="{{ url_for('user.api_key_revoke', key_id=key.id) }}"
-                  data-confirm="{{ _('confirm_revoke') }}">
-              <button class="btn btn-sm btn-danger" type="submit">{{ _('api_key_revoke') }}</button>
             </form>
             {% endif %}
             &nbsp;
@@ -110,6 +97,28 @@
                   data-confirm="{{ _('confirm_delete_key') }}">
               <button class="btn btn-sm btn-danger" type="submit">{{ _('api_key_delete') }}</button>
             </form>
+            <div class="export-col">
+              <form action="{{ url_for('user.api_key_export_skill', key_id=key.id) }}" method="post">
+                <select name="platform" class="platform-select" title="{{ _('platform_variant_hint') }}">
+                  <option value="">{{ _('platform_generic') }}</option>
+                  <option value="modelscope">ModelScope</option>
+                  <option value="qianwen">{{ _('platform_qianwen') }}</option>
+                  <option value="bailian">{{ _('platform_bailian') }}</option>
+                  <option value="workbuddy">WorkBuddy</option>
+                </select>
+                <button class="btn btn-sm btn-ghost" type="submit" title="{{ _('api_key_export_skill_hint') }}">{{ _('api_key_export_skill') }}</button>
+              </form>
+              <form action="{{ url_for('user.api_key_export_mcp', key_id=key.id) }}" method="post">
+                <select name="platform" class="platform-select" title="{{ _('platform_variant_hint') }}">
+                  <option value="">{{ _('platform_generic') }}</option>
+                  <option value="modelscope">ModelScope</option>
+                  <option value="qianwen">{{ _('platform_qianwen') }}</option>
+                  <option value="bailian">{{ _('platform_bailian') }}</option>
+                  <option value="workbuddy">WorkBuddy</option>
+                </select>
+                <button class="btn btn-sm btn-ghost" type="submit" title="{{ _('api_key_export_mcp_hint') }}">{{ _('api_key_export_mcp') }}</button>
+              </form>
+            </div>
           </td>
         </tr>
         {% else %}

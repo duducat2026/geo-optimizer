@@ -1,0 +1,8 @@
+{
+  "type": "streamableHttp",
+  "url": "https://geo.tool.jiuchongju.com/mcp",
+  "headers": {
+    "Authorization": "Bearer ${GEO_API_KEY}"
+  },
+  "timeout": 60000
+}

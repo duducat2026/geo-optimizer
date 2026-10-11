@@ -552,24 +552,24 @@ class TestWebKeyManagement:
         assert resp.status_code == 200
         assert b"geo_" in resp.data  # 新密钥明文展示
 
-    def test_revoke_key_via_web(self, app, client):
+    def test_revoke_endpoint_removed(self, app, client):
+        """用户侧停用功能已下线，revoke 路由不再存在。"""
         client.post("/login", data={"username": "admin", "password": "admin123"})
         from geo_optimizer.web.portal.api.auth import generate_api_key
         from geo_optimizer.web.portal.models import User
 
         with app.app_context():
             user = User.query.filter_by(username="admin").first()
-            api_key, _ = generate_api_key(user.id, name="to-revoke")
+            api_key, _ = generate_api_key(user.id, name="no-revoke")
             key_id = api_key.id
 
-        resp = client.post(f"/api-keys/{key_id}/revoke", follow_redirects=True)
-        assert resp.status_code == 200
+        resp = client.post(f"/api-keys/{key_id}/revoke")
+        assert resp.status_code == 404
 
         with app.app_context():
-            from geo_optimizer.web.portal.extensions import db
             from geo_optimizer.web.portal.models import ApiKey
-            key = db.session.get(ApiKey, key_id)
-            assert key.is_active is False
+            key = ApiKey.query.get(key_id)
+            assert key.is_active is True
 
     def test_key_logs_page(self, app, client):
         client.post("/login", data={"username": "admin", "password": "admin123"})

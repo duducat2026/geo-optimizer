@@ -154,7 +154,13 @@ REMOTE_SCRIPT
 # ---- Step 7: 同步 Nginx 配置（新增 /mcp streamable-HTTP 反代）----
 echo ""
 echo "[7/7] 同步 Nginx 配置..."
-scp "${REPO_ROOT}/deployment/nginx_geotool.conf" "${REMOTE_HOST}:/tmp/geotool.conf.new"
+# 仓库模板为开源脱敏版（域名为 geo.tool.example.com），上传前用真实 DOMAIN 替换，
+# 避免证书路径与云端不符导致 nginx -t 失败。
+NGINX_RENDERED="/tmp/${VERSION}.nginx.local"
+sed "s/geo\.tool\.example\.com/${DOMAIN}/g" \
+    "${REPO_ROOT}/deployment/nginx_geotool.conf" > "$NGINX_RENDERED"
+scp "$NGINX_RENDERED" "${REMOTE_HOST}:/tmp/geotool.conf.new"
+rm -f "$NGINX_RENDERED"
 ssh "$REMOTE_HOST" bash <<'REMOTE_SCRIPT'
 set -e
 CONF=/etc/nginx/conf.d/geotool.conf
@@ -167,7 +173,7 @@ fi
 cp "$NEW" "$CONF"
 if nginx -t 2>/tmp/nginx_test.log; then
     systemctl reload nginx
-    echo "  Nginx 生效: https://geo.tool.example.com/mcp → 127.0.0.1:8000"
+    echo "  Nginx 已 reload：/ → 127.0.0.1:5000, /mcp → 127.0.0.1:8000"
 else
     echo "  [ERROR] nginx -t 校验失败，回滚："
     cat /tmp/nginx_test.log

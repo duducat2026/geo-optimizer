@@ -40,8 +40,19 @@
         </div>
         <div class="form-row">
           <label for="password">{{ _('password') }}</label>
-          <input type="password" id="password" name="password" required
-                 autocomplete="current-password">
+          <div class="pwd-field">
+            <input type="password" id="password" name="password" required
+                   autocomplete="current-password">
+            <button type="button" class="pwd-toggle" title="{{ _('pwd_show') }}"
+                    aria-label="{{ _('pwd_show') }}" onclick="togglePwd('password', this)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                   stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path class="eye" d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                <circle class="eye" cx="12" cy="12" r="3"></circle>
+                <line class="eye-slash" x1="4" y1="4" x2="20" y2="20" style="display:none"></line>
+              </svg>
+            </button>
+          </div>
         </div>
         <button class="btn btn-auth" type="submit">{{ _('login') }}</button>
       </form>
@@ -59,5 +70,19 @@
       </div>
     </div>
   </div>
+
+  <script>
+    // 密码明文查看切换（眼睛图标 + 无障碍标签）
+    var PWD_SHOW = "{{ _('pwd_show') }}";
+    var PWD_HIDE = "{{ _('pwd_hide') }}";
+    function togglePwd(id, btn) {
+      var input = document.getElementById(id);
+      var show = input.type === "password";
+      input.type = show ? "text" : "password";
+      btn.title = show ? PWD_HIDE : PWD_SHOW;
+      btn.setAttribute("aria-label", btn.title);
+      btn.querySelector(".eye-slash").style.display = show ? "" : "none";
+    }
+  </script>
 </body>
 </html>

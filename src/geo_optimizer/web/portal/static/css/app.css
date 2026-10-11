@@ -105,6 +105,20 @@ input:focus, select:focus { outline: 2px solid rgba(47, 111, 237, .35); }
 .btn-danger:hover { background: #b91c1c; }
 .btn-ghost { background: transparent; color: var(--primary); border: 1px solid var(--primary); }
 
+/* 密钥页平台选择下拉（紧凑样式，避免复用 .btn 撑宽表格） */
+.platform-select {
+  padding: 4px 6px;
+  font-size: 12px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: #fff;
+  color: var(--text, #1f2937);
+  max-width: 130px;
+  vertical-align: middle;
+}
+.export-col { display: flex; flex-direction: column; gap: 4px; margin-top: 6px; }
+.export-col form { display: inline-flex; align-items: center; gap: 4px; }
+
 /* ---- 表格 ---- */
 table { width: 100%; border-collapse: collapse; }
 th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--border); }
