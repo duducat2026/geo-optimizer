@@ -53,6 +53,7 @@
           <th>{{ _('api_key_expires') }}</th>
           <th>{{ _('api_key_status') }}</th>
           <th>{{ _('api_key_calls') }}</th>
+          <th>{{ _('api_quota_today') }}</th>
           <th>{{ _('api_key_last_used') }}</th>
           <th>{{ _('actions') }}</th>
         </tr>
@@ -82,6 +83,10 @@
             {% else %}<span class="badge ok">{{ _('api_key_active') }}</span>{% endif %}
           </td>
           <td>{{ key.total_calls }}</td>
+          <td>
+            {{ key.used_today }} /
+            {% if key.daily_quota and key.daily_quota > 0 %}{{ key.daily_quota }}{% else %}{{ _('api_quota_unlimited') }}{% endif %}
+          </td>
           <td>{{ key.last_used_at | localtime if key.last_used_at else '-' }}</td>
           <td style="white-space:nowrap;">
             <a href="{{ url_for('user.api_key_logs', key_id=key.id) }}">{{ _('api_key_view_logs') }}</a>

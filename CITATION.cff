@@ -15,8 +15,8 @@ abstract: >-
 version: 1.0.0
 date-released: "2026-07-26"
 license: AGPL-3.0-or-later
-repository-code: "https://github.com/geo-optimizer/geo-optimizer"
-url: "https://geo-optimizer.github.io/geo-optimizer/"
+repository-code: "https://github.com/duducat2026/geo-optimizer"
+url: "https://duducat2026.github.io/geo-optimizer/"
 keywords:
   - GEO
   - generative engine optimization

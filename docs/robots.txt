@@ -22,4 +22,4 @@ Allow: /
 User-agent: *
 Allow: /
 
-Sitemap: https://geo-optimizer.github.io/geo-optimizer/sitemap.xml
+Sitemap: https://duducat2026.github.io/geo-optimizer/sitemap.xml

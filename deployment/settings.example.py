@@ -22,8 +22,8 @@ DB_NAME = "geo-op"
 
 # ---- 默认管理员（首次初始化时创建） ----
 # 登录后请立即在后台修改口令
-ADMIN_USERNAME = "admin"
-ADMIN_PASSWORD = "change-me-admin-password"
+ADMIN_USERNAME = "geoadmin"
+ADMIN_PASSWORD = "geo-optimizer"
 
 # ---- 普通用户默认评估配额 ----
 DEFAULT_EVAL_QUOTA = 10

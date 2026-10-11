@@ -102,7 +102,7 @@ data/artifacts/               — 运行期产物（已 .gitignore）
 
 ```bash
 # 克隆项目
-git clone https://github.com/geo-optimizer/geo-optimizer.git
+git clone https://github.com/duducat2026/geo-optimizer.git
 cd geo-optimizer
 
 # 创建虚拟环境并安装（开发模式，含测试依赖）
@@ -418,7 +418,7 @@ A: 确认 `deployment/settings.py` 的 MySQL 配置与 `init_db.sql` 已执行�
   title  = {GEO-Optimizer: Generative Engine Optimization Toolchain},
   author = {GEO-Optimizer},
   year   = {2026},
-  url    = {https://github.com/geo-optimizer/geo-optimizer},
+  url    = {https://github.com/duducat2026/geo-optimizer},
   license = {AGPL-3.0}
 }
 ```

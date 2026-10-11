@@ -42,7 +42,11 @@ def generate_api_key(user_id: int, name: str = "", expires_days: int = 365) -> T
 
 
 def verify_api_key(raw_key: str) -> Optional[Tuple[User, ApiKey]]:
-    """验证明文密钥，有效则返回 (User, ApiKey)，否则 None。"""
+    """验证明文密钥，有效则返回 (User, ApiKey)，否则 None。
+
+    注意：仅做校验，不更新计数；计数由调用方通过 ``touch_usage`` 处理，
+    以便在每日额度超限时不累加被拒调用之外的统计口径可控。
+    """
     key_hash = _hash_key(raw_key)
     api_key = ApiKey.query.filter_by(key_hash=key_hash).first()
     if not api_key or not api_key.is_valid:
@@ -50,10 +54,6 @@ def verify_api_key(raw_key: str) -> Optional[Tuple[User, ApiKey]]:
     user = db.session.get(User, api_key.user_id)
     if not user or not user.is_active:
         return None
-    # 更新使用统计
-    api_key.last_used_at = datetime.utcnow()
-    api_key.total_calls = (api_key.total_calls or 0) + 1
-    db.session.commit()
     return user, api_key
 
 
@@ -93,6 +93,18 @@ def api_key_required(view):
         user, api_key = result
         g.api_user = user
         g.api_key = api_key
+
+        # 每日调用额度检查（daily_quota <= 0 表示不限）
+        if api_key.daily_quota and api_key.daily_quota > 0 and api_key.used_today >= api_key.daily_quota:
+            record_call(api_key, user, 403)
+            return jsonify({
+                "error": "quota_exceeded",
+                "message": f"Daily call quota ({api_key.daily_quota}) exhausted, resets at midnight (UTC+8)",
+            }), 403
+
+        # 通过校验与额度后，累加当日与累计调用计数
+        api_key.touch_usage()
+        db.session.commit()
 
         response = view(*args, **kwargs)
 

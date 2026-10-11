@@ -1,11 +1,56 @@
 {% extends "base.html" %}
 {% block content %}
-<h2 class="page-title">{{ _('api_key_logs_title') }} - {{ key.name or key.key_prefix }}</h2>
+<h2 class="page-title">{{ _('api_key_stats_title') }} - {{ key.name or key.key_prefix }}</h2>
+
+<div class="card">
+  <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;">
+    <div class="muted">
+      {{ _('api_total_calls') }}: <strong>{{ key.total_calls }}</strong>
+      &nbsp;·&nbsp;
+      {{ _('api_quota_today') }}: <strong>{{ key.used_today }}</strong> /
+      {% if key.daily_quota and key.daily_quota > 0 %}{{ key.daily_quota }}{% else %}{{ _('api_quota_unlimited') }}{% endif %}
+    </div>
+    <a href="{{ url_for('user.api_keys') }}" class="btn btn-sm">{{ _('back') }}</a>
+  </div>
+</div>
+
+<div class="card">
+  <h3>{{ _('api_daily_stat') }}</h3>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>{{ _('api_stat_date') }}</th>
+          <th>{{ _('api_stat_count') }}</th>
+          <th>{{ _('actions') }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in daily_stats %}
+        <tr>
+          <td>{{ row.day }}</td>
+          <td>{{ row.count }}</td>
+          <td>
+            <a href="{{ url_for('user.api_key_logs', key_id=key.id, date=row.day.strftime('%Y-%m-%d') if row.day.strftime is defined else row.day) }}">{{ _('api_view_detail') }}</a>
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="3" class="muted">{{ _('no_data') }}</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
 
 <div class="card">
   <div style="display:flex;justify-content:space-between;align-items:center;">
-    <span class="muted">{{ _('total_count') }} {{ total }}</span>
-    <a href="{{ url_for('user.api_keys') }}" class="btn btn-sm">{{ _('back') }}</a>
+    <h3 style="margin:0;">
+      {{ _('api_call_detail') }}
+      {% if selected_date %}<span class="badge">={{ selected_date }}</span>{% endif %}
+    </h3>
+    {% if selected_date %}
+    <a href="{{ url_for('user.api_key_logs', key_id=key.id) }}" class="btn btn-sm btn-ghost">{{ _('api_all_days') }}</a>
+    {% endif %}
   </div>
   <div class="table-wrap">
     <table>
@@ -40,11 +85,11 @@
   {% if pages > 1 %}
   <div class="pagination mt">
     {% if page > 1 %}
-      <a href="{{ url_for('user.api_key_logs', key_id=key.id, page=page-1) }}">{{ _('prev_page') }}</a>
+      <a href="{{ url_for('user.api_key_logs', key_id=key.id, date=selected_date, page=page-1) }}">{{ _('prev_page') }}</a>
     {% endif %}
     <span class="muted">{{ page }} / {{ pages }}</span>
     {% if page < pages %}
-      <a href="{{ url_for('user.api_key_logs', key_id=key.id, page=page+1) }}">{{ _('next_page') }}</a>
+      <a href="{{ url_for('user.api_key_logs', key_id=key.id, date=selected_date, page=page+1) }}">{{ _('next_page') }}</a>
     {% endif %}
   </div>
   {% endif %}

@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% block content %}
+<h2 class="page-title">{{ _('admin_api_keys_title') }}</h2>
+
+<div class="card">
+  <div class="muted">{{ _('total_count') }} {{ total }}</div>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>{{ _('owner_user') }}</th>
+          <th>{{ _('api_key_name') }}</th>
+          <th>{{ _('api_key_prefix') }}</th>
+          <th>{{ _('status') }}</th>
+          <th>{{ _('api_total_calls') }}</th>
+          <th>{{ _('api_used_today') }}</th>
+          <th>{{ _('api_daily_quota') }}</th>
+          <th>{{ _('actions') }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for k in keys %}
+        <tr>
+          <td>{{ k.id }}</td>
+          <td>{{ owners.get(k.user_id, k.user_id) }}</td>
+          <td>{{ k.name or '-' }}</td>
+          <td><code>{{ k.key_prefix }}…</code></td>
+          <td>
+            {% if k.is_valid %}<span class="badge ok">{{ _('status_active') }}</span>
+            {% else %}<span class="badge err">{{ _('status_inactive') }}</span>{% endif %}
+          </td>
+          <td>{{ k.total_calls }}</td>
+          <td>{{ k.used_today }}</td>
+          <td>
+            <form method="post" action="{{ url_for('admin.update_key_quota', key_id=k.id) }}"
+                  style="display:flex;align-items:center;gap:6px;">
+              <input type="hidden" name="page" value="{{ page }}">
+              <input type="number" name="daily_quota" min="0" value="{{ k.daily_quota }}"
+                     style="width:90px;padding:4px 6px;">
+              <button type="submit" class="btn btn-sm">{{ _('save') }}</button>
+            </form>
+            <span class="muted" style="font-size:12px;">{{ _('api_daily_quota_hint') }}</span>
+          </td>
+          <td>
+            <a href="{{ url_for('admin.audit_page') }}?username={{ owners.get(k.user_id, '') }}">{{ _('api_call_detail') }}</a>
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="9" class="muted">{{ _('no_data') }}</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  {% if pages > 1 %}
+  <div class="pagination mt">
+    {% if page > 1 %}
+      <a href="{{ url_for('admin.api_keys', page=page-1, per_page=per_page) }}">{{ _('prev_page') }}</a>
+    {% endif %}
+    <span class="muted">{{ page }} / {{ pages }}</span>
+    {% if page < pages %}
+      <a href="{{ url_for('admin.api_keys', page=page+1, per_page=per_page) }}">{{ _('next_page') }}</a>
+    {% endif %}
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

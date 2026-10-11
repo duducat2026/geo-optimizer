@@ -289,12 +289,20 @@ def usage_stats():
 
     return jsonify({
         "total_calls": total_calls,
+        "current_key": {
+            "id": g.api_key.id,
+            "daily_quota": g.api_key.daily_quota,
+            "used_today": g.api_key.used_today,
+            "quota_left": g.api_key.quota_left if (g.api_key.daily_quota and g.api_key.daily_quota > 0) else None,
+        },
         "keys": [
             {
                 "id": k.id,
                 "name": k.name,
                 "key_prefix": k.key_prefix,
                 "total_calls": k.total_calls,
+                "daily_quota": k.daily_quota,
+                "used_today": k.used_today,
                 "is_active": k.is_active,
                 "last_used_at": k.last_used_at.isoformat() + "Z" if k.last_used_at else None,
             }

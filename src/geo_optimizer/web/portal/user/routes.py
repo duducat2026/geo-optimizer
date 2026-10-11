@@ -569,17 +569,45 @@ def api_key_reveal(key_id):
 @bp.route("/api-keys/<int:key_id>/logs")
 @login_required
 def api_key_logs(key_id):
-    """API 密钥调用明细（分页）。"""
+    """API 密钥调用统计：按天汇总调用数量，可下钻查看某日调用明细（分页）。"""
     key = db.session.get(ApiKey, key_id)
     if not key or key.user_id != current_user.id:
         abort(404)
 
+    from sqlalchemy import func
+
+    from geo_optimizer.web.portal.models import ApiCallLog
+
+    # 按自然日（UTC，与额度重置口径一致）汇总调用数量，最近 30 天
+    # func.date() 在 MySQL/SQLite 均返回 "YYYY-MM-DD" 字符串，避免 Date 解析差异
+    day_expr = func.date(ApiCallLog.created_at).label("day")
+    daily_rows = (
+        db.session.query(day_expr, func.count(ApiCallLog.id).label("cnt"))
+        .filter(ApiCallLog.api_key_id == key_id)
+        .group_by(day_expr)
+        .order_by(day_expr.desc())
+        .limit(30)
+        .all()
+    )
+    daily_stats = [{"day": str(r.day), "count": r.cnt} for r in daily_rows]
+
+    # 明细列表：可选按日过滤
+    from datetime import datetime
+
+    selected = (request.args.get("date") or "").strip()
+    query = ApiCallLog.query.filter_by(api_key_id=key_id)
+    if selected:
+        try:
+            day = datetime.strptime(selected, "%Y-%m-%d").date()
+            start = datetime.combine(day, datetime.min.time())
+            end = datetime.combine(day, datetime.max.time())
+            query = query.filter(ApiCallLog.created_at >= start, ApiCallLog.created_at <= end)
+        except ValueError:
+            selected = ""
+
     per_page = 20
     page = max(1, _to_int(request.args.get("page"), 1))
-    query = (
-        ApiCallLog.query.filter_by(api_key_id=key_id)
-        .order_by(ApiCallLog.created_at.desc())
-    )
+    query = query.order_by(ApiCallLog.created_at.desc())
     total = query.count()
     pages = max(1, -(-total // per_page))
     page = min(page, pages)
@@ -589,6 +617,7 @@ def api_key_logs(key_id):
         return jsonify({"logs": [l.to_dict() for l in logs], "total": total,
                         "page": page, "pages": pages})
     return render_template("user_api_key_logs.html", key=key, logs=logs,
+                           daily_stats=daily_stats, selected_date=selected,
                            page=page, pages=pages, total=total)
 
 

@@ -391,6 +391,45 @@ def update_quota(user_id):
     return redirect(url_for("admin.users"))
 
 
+@bp.route("/api-keys")
+@login_required
+@admin_required
+def api_keys():
+    """管理后台：API 密钥列表与每日调用额度维护（分页）。"""
+    per_page = _to_int(request.args.get("per_page"), 20)
+    if per_page not in PER_PAGE_CHOICES:
+        per_page = 20
+    page = max(1, _to_int(request.args.get("page"), 1))
+    query = ApiKey.query.order_by(ApiKey.created_at.desc())
+    total = query.count()
+    pages = max(1, -(-total // per_page))
+    page = min(page, pages)
+    keys = query.offset((page - 1) * per_page).limit(per_page).all()
+    # 附带属主用户名
+    owner_ids = {k.user_id for k in keys}
+    owners = {u.id: u.username for u in User.query.filter(User.id.in_(owner_ids)).all()} if owner_ids else {}
+    return render_template("admin_api_keys.html", keys=keys, owners=owners,
+                           page=page, pages=pages, total=total, per_page=per_page)
+
+
+@bp.route("/api-keys/<int:key_id>/quota", methods=["POST"])
+@login_required
+@admin_required
+def update_key_quota(key_id):
+    """修改指定密钥的每日调用额度（0 表示不限）。"""
+    key = db.session.get(ApiKey, key_id)
+    if key:
+        key.daily_quota = max(0, _to_int(request.form.get("daily_quota"), key.daily_quota))
+        db.session.commit()
+        owner = db.session.get(User, key.user_id)
+        audit.record(audit.ACTION_KEY_QUOTA_UPDATE,
+                     target=(owner.username if owner else str(key.user_id)),
+                     detail=f"key_id={key.id},prefix={key.key_prefix},daily_quota={key.daily_quota}")
+        flash(_("update_quota"), "info")
+    return redirect(url_for("admin.api_keys", page=request.form.get("page", 1)))
+
+
+
 @bp.route("/sites")
 @login_required
 @admin_required

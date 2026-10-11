@@ -44,6 +44,8 @@ tar czf "$ARCHIVE" \
     --exclude='tmp' \
     --exclude='output' \
     --exclude='node_modules' \
+    --exclude='data/artifacts' \
+    --exclude='backups' \
     -C "$REPO_ROOT" .
 echo "  打包完成: ${ARCHIVE} ($(du -h "$ARCHIVE" | cut -f1))"
 
@@ -51,7 +53,27 @@ echo "  打包完成: ${ARCHIVE} ($(du -h "$ARCHIVE" | cut -f1))"
 echo ""
 echo "[2/7] 上传到 GEO 主机..."
 ssh "$REMOTE_HOST" "mkdir -p ${DEPLOY_BASE}/releases ${DEPLOY_BASE}/shared/data/artifacts"
-scp "$ARCHIVE" "${REMOTE_HOST}:/tmp/${VERSION}.tar.gz"
+# 分块流式上传：本地代理可能掐断单条大流量传输，切成小分块、每块独立短连接并重试。
+SPLIT_DIR="$(mktemp -d)"
+split -b 2m "$ARCHIVE" "${SPLIT_DIR}/part."
+first=1
+for p in "${SPLIT_DIR}"/part.*; do
+    n=0
+    redirect=">"
+    [ "$first" = "1" ] || redirect=">>"
+    first=0
+    until ssh "$REMOTE_HOST" "cat ${redirect} /tmp/${VERSION}.tar.gz" < "$p"; do
+        n=$((n + 1))
+        if [ "$n" -ge 4 ]; then
+            echo "  [ERROR] 分块上传失败: $p"
+            rm -rf "$SPLIT_DIR"
+            exit 1
+        fi
+        echo "  分块重试 ($n): $(basename "$p")"
+        sleep 2
+    done
+done
+rm -rf "$SPLIT_DIR"
 echo "  上传完成"
 
 # ---- Step 3: 云端解压与安装 ----

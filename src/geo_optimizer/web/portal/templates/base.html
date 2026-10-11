@@ -25,6 +25,7 @@
       {% endif %}
       {% if current_user.is_authenticated and current_user.is_admin %}
         <a href="{{ url_for('admin.users') }}">{{ _('nav_users') }}</a>
+        <a href="{{ url_for('admin.api_keys') }}">{{ _('nav_admin_api_keys') }}</a>
         <a href="{{ url_for('admin.config') }}">{{ _('nav_sys_config') }}</a>
         <a href="{{ url_for('admin.user_llm_configs') }}">{{ _('nav_user_llm') }}</a>
         <a href="{{ url_for('admin.sites') }}">{{ _('nav_sites') }}</a>
