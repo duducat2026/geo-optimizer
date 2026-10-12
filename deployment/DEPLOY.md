@@ -1,7 +1,7 @@
 # GEO-Optimizer 平台部署说明
 
 本文面向**裸机 / 云主机**（非 Docker）部署，串起从数据库构建到 MCP/Skill 导出的完整流程。
-所有脚本位于 `deployment/` 目录。Docker 一键编排见根目录 `README.md` 的「部署指南」。
+所有脚本位于 `deployment/` 目录。Docker 一键编排见根目录 `README.zh-CN.md`（中文版）的「部署指南」，英文文档见 `README.md`。
 
 ---
 
@@ -86,9 +86,9 @@ python deployment/init_platform.py
 内置回滚（Nginx 配置 `nginx -t` 失败自动还原）。
 
 ```bash
-REMOTE_HOST=aliyun-geo \
-REMOTE_IP=39.105.55.255 \
-DOMAIN=geo.tool.jiuchongju.com \
+REMOTE_HOST=your-ssh-host-alias \
+REMOTE_IP=203.0.113.10 \
+DOMAIN=geo.tool.example.com \
 bash deployment/deploy.sh
 ```
 
