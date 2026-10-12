@@ -7,6 +7,10 @@
 传输模式为 **streamable-HTTP**（默认），适合远程部署与多客户端并发；亦保留 stdio
 模式用于本地单客户端调试。基于 MCP Python SDK **v2**（`mcp.server.mcpserver.MCPServer`）。
 
+- **开源地址**：<https://github.com/duducat2026/geo-optimizer>（AGPL-3.0，闭源商用需商业授权）
+- **文档首页**：<https://duducat2026.github.io/geo-optimizer/>
+- **官方云端端点**：<https://geo.tool.jiuchongju.com/mcp>（平台方运营，也可按下文自建）
+
 ---
 
 ## 目录结构

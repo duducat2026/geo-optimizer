@@ -5,6 +5,7 @@
 
 **线上端点**：`https://geo.tool.jiuchongju.com/mcp`（streamable-HTTP）
 **本地端点**：`http://127.0.0.1:8000/mcp`（自建调试）
+**开源地址**：<https://github.com/duducat2026/geo-optimizer>（AGPL-3.0，平台/MCP/SKILL 同仓库）
 
 ---
 
@@ -118,3 +119,22 @@ MCP 服务端把以上能力以工具形式开放给 Agent：提交任务立即�
 - API Key 只经环境变量 / `config.json` / 请求头传入，切勿硬编码进代码或提交到公共仓库。
 - 若放置 `config.json`，请将其加入 `.gitignore`（明文含 key）。
 - 线上端点已置于反向代理 + TLS 之后；自建对外部署时建议同样处理。
+
+---
+
+## 开源与自建
+
+本 MCP 服务、Web 平台、CLI 与 SKILL 客户端均来自同一个开源仓库：
+
+- 源码：<https://github.com/duducat2026/geo-optimizer>
+- 文档/首页：<https://duducat2026.github.io/geo-optimizer/>
+- 许可证：AGPL-3.0（闭源商用 / SaaS 集成请联系 52859273@qq.com 获取商业授权）
+
+自建部署（Docker 一键）：
+
+```bash
+git clone https://github.com/duducat2026/geo-optimizer.git
+cd geo-optimizer
+docker compose up -d geo-web geo-mcp
+```
+

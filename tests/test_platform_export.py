@@ -127,6 +127,29 @@ class TestMcpVariants:
                         assert not full_key.search(text), f"{platform}/{info.filename} 含明文密钥"
 
 
+class TestOpenSourceLink:
+    """对外发布物必须携带 GitHub 开源仓库地址。"""
+
+    def test_skill_variants_carry_repo_url(self):
+        from geo_optimizer.web.portal.user import platform_export as pe
+
+        for platform in pe.SUPPORTED_PLATFORMS:
+            text = _zip_read(pe.build_skill_zip(platform), "SKILL.md").decode("utf-8")
+            assert pe.REPO_URL in text, f"{platform} SKILL.md 缺少开源地址"
+
+    def test_modelscope_readme_carry_repo_url(self):
+        from geo_optimizer.web.portal.user import platform_export as pe
+
+        readme = _zip_read(pe.build_mcp_zip("modelscope"), "readme.md").decode("utf-8")
+        assert pe.REPO_URL in readme
+
+    def test_workbuddy_connector_meta_carry_repo_url(self):
+        from geo_optimizer.web.portal.user import platform_export as pe
+
+        meta = json.loads(_zip_read(pe.build_mcp_zip("workbuddy"), "connector-meta.json"))
+        assert meta["homepage"] == pe.REPO_URL
+
+
 # ─── 路由测试：/export-skill 与 /export-mcp 的 platform 参数 ─────────────────
 
 

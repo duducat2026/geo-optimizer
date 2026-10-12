@@ -29,6 +29,9 @@ SUPPORTED_PLATFORMS = ("modelscope", "qianwen", "bailian", "workbuddy")
 PUBLIC_BASE_URL = "https://geo.tool.jiuchongju.com"
 MCP_ENDPOINT = f"{PUBLIC_BASE_URL}/mcp"
 
+# 开源仓库地址：所有对外发布物（SKILL.md / 平台 readme / connector-meta）统一引用
+REPO_URL = "https://github.com/duducat2026/geo-optimizer"
+
 _ROOT = Path(__file__).resolve().parents[5]
 SKILL_SRC = _ROOT / "docs" / "geo-skill"
 PLATFORM_ASSETS = SKILL_SRC / "platforms"

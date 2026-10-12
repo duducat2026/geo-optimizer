@@ -44,6 +44,10 @@ metadata:
 
 Analyze websites for AI search engine (GEO) readiness via the GEO-Optimizer platform API. Covers 11 AI engines: Doubao, Qwen, Hunyuan, Zhipu, DeepSeek, Google AI, ChatGPT Search, Perplexity, Claude, Copilot, Gemini.
 
+**Open-source project:** https://github.com/duducat2026/geo-optimizer (AGPL-3.0; the
+platform, this skill and the MCP server are all built from that repository — see its
+README for self-hosting). Commercial licensing: 52859273@qq.com.
+
 ## Prompt Triggers
 
 Invoke this skill directly from natural-language prompts. Extract the website from the
@@ -379,3 +383,5 @@ except TimeoutError as e:
 - Queued tasks automatically start when slots become available
 - The GEO-Optimizer platform is a paid/quota-managed external service; you need an
   account and API key issued by your platform administrator
+- Source code and documentation: https://github.com/duducat2026/geo-optimizer —
+  self-host it to run your own platform instance (CLI / Web / MCP / SKILL all-in-one)

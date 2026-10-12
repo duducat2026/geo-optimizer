@@ -95,6 +95,7 @@ mcp = MCPServer(
         "工作流：先 geo_submit_task 提交（立即返回 task_id，不阻塞）；"
         "用户询问进度时用 geo_get_task_status / geo_get_task_logs 查询；"
         "完成后用 geo_get_task_result 获取评分与下载链接。切勿定时轮询阻塞。"
+        "开源地址：https://github.com/duducat2026/geo-optimizer（AGPL-3.0，可自建部署）。"
     ),
 )
 
