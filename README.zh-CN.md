@@ -271,7 +271,7 @@ python -m mcp_server --host 0.0.0.0 --port 8000       # 对外
 python -m mcp_server --transport stdio                # stdio 本地模式
 ```
 
-> 详见 [`mcp_server/README.md`](mcp_server/README.md)。
+> 详见 [`mcp_server/README.md`](mcp_server/README.md)（英文版：[`mcp_server/README.en.md`](mcp_server/README.en.md)）。
 
 ## 🧩 Agent SKILL
 
@@ -426,3 +426,13 @@ A: 确认 `deployment/settings.py` 的 MySQL 配置与 `init_db.sql` 已执行�
 ```
 
 详见 [`CITATION.cff`](./CITATION.cff)。
+
+### 📖 文档索引
+
+| 文档 | 简体中文 | English |
+|---|---|---|
+| 仓库 README | 本文件 | [`README.md`](README.md) |
+| 项目主页 | [duducat2026.github.io](https://duducat2026.github.io/geo-optimizer/) | [English](https://duducat2026.github.io/geo-optimizer/index.en.html) |
+| 使用指南（控制台 / 开放 API） | [`docs/user-guide.md`](docs/user-guide.md) | [`docs/user-guide.en.md`](docs/user-guide.en.md) |
+| 裸机与云主机部署 | [`deployment/DEPLOY.md`](deployment/DEPLOY.md) | [`deployment/DEPLOY.en.md`](deployment/DEPLOY.en.md) |
+| MCP 服务端 | [`mcp_server/README.md`](mcp_server/README.md) | [`mcp_server/README.en.md`](mcp_server/README.en.md) |

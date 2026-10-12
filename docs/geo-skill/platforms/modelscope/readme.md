@@ -6,6 +6,7 @@
 **线上端点**：`https://geo.tool.jiuchongju.com/mcp`（streamable-HTTP）
 **本地端点**：`http://127.0.0.1:8000/mcp`（自建调试）
 **开源地址**：<https://github.com/duducat2026/geo-optimizer>（AGPL-3.0，平台/MCP/SKILL 同仓库）
+**English**：see the [English overview](#english-overview) at the end of this document.
 
 ---
 
@@ -138,3 +139,67 @@ cd geo-optimizer
 docker compose up -d geo-web geo-mcp
 ```
 
+---
+
+## English overview
+
+GEO-Optimizer is an open-source **Generative Engine Optimization (GEO)** toolchain and
+multi-user platform that helps websites get cited by AI search engines. This MCP server wraps
+its open API (`/api/v1/*`) as 8 tools over **streamable-HTTP**, so any MCP client can submit
+evaluations, follow progress and fetch optimization plans in natural language.
+
+- **11 AI engines evaluated**: Doubao, Tongyi Qianwen, Hunyuan, ChatGLM, DeepSeek + Google AI Overviews, ChatGPT Search, Perplexity, Claude, Copilot, Gemini
+- **Dual scoring model**: 5 dimensions for Chinese engines, 6 for global engines (incl. E-E-A-T signals)
+- **LLM-generated plans**: improvement items plus content packs adapted to WeChat / Zhihu / Toutiao / Medium / Quora / Reddit
+- **Structured data**: automatic Schema.org JSON-LD and FAQ generation
+
+### Hosted endpoint
+
+```json
+{
+  "mcpServers": {
+    "geo-optimizer": {
+      "type": "streamableHttp",
+      "url": "https://geo.tool.jiuchongju.com/mcp",
+      "headers": { "Authorization": "Bearer ${GEO_API_KEY}" }
+    }
+  }
+}
+```
+
+Replace `${GEO_API_KEY}` with your own key (starts with `geo_`), created on the
+**API Keys** page of the [console](https://geo.tool.jiuchongju.com). Keys may be passed per
+request via the `Authorization` header, or as the server-side default through `GEO_API_KEY`.
+
+### Tools
+
+| Tool | Purpose | Read-only |
+| --- | --- | --- |
+| `geo_submit_task` | Submit a GEO evaluation; returns `task_id` immediately (`plan`/`eval`) | no |
+| `geo_list_tasks` | List recent tasks of the account (pagination + time-range filter) | yes |
+| `geo_get_task_status` | Query task status and progress | yes |
+| `geo_get_task_logs` | Fetch execution logs (incremental via `after_id`) | yes |
+| `geo_get_task_result` | Fetch scores per engine, strengths, weaknesses and download links | yes |
+| `geo_cancel_task` | Cancel a queued/running task (quota refunded) | no |
+| `geo_get_usage` | Show API call statistics | yes |
+| `geo_download_report` | Download the report and plan ZIP to a local path | no |
+
+All tools accept `response_format` (`markdown` by default, or `json`).
+
+**Recommended workflow**: submit the task (returns at once, never blocks) → check status or
+logs only when the user asks → read results and download links once completed. Do not poll on a
+timer.
+
+### License & self-hosting
+
+Platform, MCP server, CLI and SKILL package all come from the same repository:
+
+- Source: <https://github.com/duducat2026/geo-optimizer>
+- Docs: <https://duducat2026.github.io/geo-optimizer/index.en.html> · [MCP guide (English)](https://github.com/duducat2026/geo-optimizer/blob/main/mcp_server/README.en.md)
+- License: AGPL-3.0 (for closed-source commercial or SaaS use, contact 52859273@qq.com for a commercial license)
+
+```bash
+git clone https://github.com/duducat2026/geo-optimizer.git
+cd geo-optimizer
+docker compose --profile mcp up -d   # web platform + MySQL + MCP server
+```

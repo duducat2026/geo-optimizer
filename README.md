@@ -272,7 +272,7 @@ python -m mcp_server --host 0.0.0.0 --port 8000       # Externally reachable
 python -m mcp_server --transport stdio                # Local stdio mode
 ```
 
-> See [`mcp_server/README.md`](mcp_server/README.md) for details.
+> See [`mcp_server/README.en.md`](mcp_server/README.en.md) for details (简体中文: [`mcp_server/README.md`](mcp_server/README.md)).
 
 ## 🧩 Agent SKILL
 
@@ -426,4 +426,14 @@ If this project is useful to you, please cite it:
 }
 ```
 
-See [`CITATION.cff`](./CITATION.cff). Chinese documentation lives in [`README.zh-CN.md`](README.zh-CN.md) and [`docs/user-guide.md`](docs/user-guide.md).
+See [`CITATION.cff`](./CITATION.cff).
+
+### Documentation
+
+| Document | English | 简体中文 |
+|---|---|---|
+| Repository README | this file | [`README.zh-CN.md`](README.zh-CN.md) |
+| Landing page | [index.en.html](https://duducat2026.github.io/geo-optimizer/index.en.html) | [中文](https://duducat2026.github.io/geo-optimizer/) |
+| User guide (console & open API) | [`docs/user-guide.en.md`](docs/user-guide.en.md) | [`docs/user-guide.md`](docs/user-guide.md) |
+| Bare-metal / cloud deployment | [`deployment/DEPLOY.en.md`](deployment/DEPLOY.en.md) | [`deployment/DEPLOY.md`](deployment/DEPLOY.md) |
+| MCP server | [`mcp_server/README.en.md`](mcp_server/README.en.md) | [`mcp_server/README.md`](mcp_server/README.md) |

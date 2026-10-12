@@ -1,6 +1,7 @@
 # GEO-Optimizer 用户使用指南
 
-> 本文档为简体中文。English documentation: [README.md](https://github.com/duducat2026/geo-optimizer/blob/main/README.md) · 中文版 README: [README.zh-CN.md](https://github.com/duducat2026/geo-optimizer/blob/main/README.zh-CN.md) · [English landing page](https://duducat2026.github.io/geo-optimizer/index.en.html)
+> 本文档为简体中文 | English version: [docs/user-guide.en.md](user-guide.en.md)
+> 更多英文资料：[README.md](https://github.com/duducat2026/geo-optimizer/blob/main/README.md) · [English landing page](https://duducat2026.github.io/geo-optimizer/index.en.html)
 > 本指南帮助您通过 **Web 控制台** 和 **开放 API** 两种方式完成网站 GEO（生成式引擎优化）评估与优化。
 
 ---

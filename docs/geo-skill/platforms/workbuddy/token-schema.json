@@ -4,7 +4,7 @@
     "GEO_API_KEY": {
       "type": "string",
       "title": "GEO API Key",
-      "description": "在 geo.tool.jiuchongju.com 控制台的「API密钥」页面获取"
+      "description": "GEO API key (starts with 'geo_'), created on the API Keys page of the geo.tool.jiuchongju.com console / 在 geo.tool.jiuchongju.com 控制台的「API密钥」页面获取"
     }
   },
   "required": ["GEO_API_KEY"]
