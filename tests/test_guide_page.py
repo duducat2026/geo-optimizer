@@ -36,3 +36,18 @@ class TestGuidePage:
         resp = admin_login.get("/guide")
         assert resp.status_code == 200
         assert b"Submission" in resp.data
+
+
+class TestUserGuideRaw:
+    """使用指南原始 Markdown 下载（中英双版，免登录）。"""
+
+    def test_zh_guide_downloadable(self, client):
+        resp = client.get("/user-guide.md")
+        assert resp.status_code == 200
+        assert "markdown" in resp.content_type
+
+    def test_en_guide_downloadable(self, client):
+        resp = client.get("/user-guide.en.md")
+        assert resp.status_code == 200
+        assert "markdown" in resp.content_type
+        assert b"# GEO-Optimizer User Guide" in resp.data

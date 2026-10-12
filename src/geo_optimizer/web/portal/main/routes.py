@@ -139,6 +139,15 @@ def user_guide_raw():
     return "User guide not found", 404
 
 
+@bp.route("/user-guide.en.md")
+def user_guide_en_raw():
+    """用户使用指南英文版原始 Markdown 文件（免登录）。"""
+    guide_file = os.path.join(_DOCS_DIR, "user-guide.en.md")
+    if os.path.isfile(guide_file):
+        return send_from_directory(_DOCS_DIR, "user-guide.en.md", mimetype="text/markdown")
+    return "User guide not found", 404
+
+
 def _count(table_model_name: str) -> int:
     from geo_optimizer.web.portal.models import User
 
