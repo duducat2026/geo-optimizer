@@ -1,5 +1,7 @@
 # GEO-Optimizer 平台部署说明
 
+[English](DEPLOY.en.md) | **简体中文**
+
 本文面向**裸机 / 云主机**（非 Docker）部署，串起从数据库构建到 MCP/Skill 导出的完整流程。
 所有脚本位于 `deployment/` 目录。Docker 一键编排见根目录 `README.zh-CN.md`（中文版）的「部署指南」，英文文档见 `README.md`。
 
@@ -68,8 +70,8 @@ python deployment/init_platform.py
 
 | 类型 | 值 | 说明 |
 |---|---|---|
-| 普通用户 | `geo_tool` / `geo_tool666` | 评估配额 50，可直接登录 |
-| 通用 API 密钥 | `geo_General2026DemoKey00000000000000` | 归属 `geo_tool`，**每日调用额度 50（受限）**，用于 MCP / Skill 导出 |
+| 普通用户 | `geo_tool` / 口令取自 `deployment/init_platform.py` 中的 `DEMO_USER_PASSWORD` | 评估配额 50，可直接登录 |
+| 通用 API 密钥 | 同脚本中的明文常量 `DEMO_API_KEY_PLAIN` | 归属 `geo_tool`，**每日调用额度 50（受限）**，用于 MCP / Skill 导出 |
 
 > **管理员账号不在本脚本初始化**：本脚本只演示普通用户与通用密钥。管理员由 `settings.py`
 > 的 `seed_defaults`（仅当不存在时）或后台创建；云端已有管理员时不受任何影响。

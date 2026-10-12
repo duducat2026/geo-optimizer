@@ -1,5 +1,7 @@
 # GEO-Optimizer MCP 服务端（streamable-HTTP 模式）
 
+[English](README.en.md) | **简体中文**
+
 把 GEO-Optimizer 平台的开放 API（`/api/v1/*`）封装为一组 **MCP 工具**，让任意 MCP
 客户端（Claude Desktop、Cursor、Qoder、自研 Agent 等）用自然语言提交网站 GEO 评估、
 查询进度与日志、获取评分与优化方案下载链接、终止任务、查看用量。
