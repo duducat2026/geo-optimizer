@@ -20,10 +20,17 @@ class PlanItem(db.Model):
     priority = db.Column(db.String(8), default=PRIORITY_MID, nullable=False)
     title = db.Column(db.String(255), nullable=False)
     content = db.Column(db.Text().with_variant(db.Text(length=4_294_967_295), "mysql"), default="")
+    content_en = db.Column(db.Text().with_variant(db.Text(length=4_294_967_295), "mysql"),
+                           default="", nullable=True)   # 双语包的英文段落
     source = db.Column(db.String(16), default="template", nullable=False)  # llm / template
     created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow,
                            onupdate=datetime.utcnow, nullable=False)
+
+    @property
+    def has_en(self) -> bool:
+        """是否已有独立英文内容（历史任务为空时打包回退到中英合稿）。"""
+        return bool((self.content_en or "").strip())
 
     def to_dict(self) -> dict:
         from geo_optimizer.web.portal.timeutil import fmt_local

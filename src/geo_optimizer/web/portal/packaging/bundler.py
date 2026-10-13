@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""将任务双语产物打包为可下载 ZIP。"""
+"""将任务双语产物打包为可下载 ZIP（包内按 zh/ 与 en/ 分语言归档）。"""
 import logging
 import zipfile
 from datetime import datetime, timezone, timedelta
@@ -24,21 +24,27 @@ def download_filename(target_url: str, suffix: str = ".zip") -> str:
     return f"{domain}_{ts}{suffix}"
 
 
-def bundle_task(task_id: str, artifact_dir: Path) -> Optional[str]:
-    """把 artifact_dir 下的所有产物（不含 zip 自身）打成 zip，返回 zip 路径。"""
+def bundle_task(task_id: str, artifact_dir: Path, target_url: str = "") -> Optional[str]:
+    """把 artifact_dir 下的所有产物（不含 zip 自身）按双语布局打成 zip。
+
+    磁盘目录保持扁平，仅归档名重排：报告/方案条目/FAQ/Schema 各出中英两份
+    （见 packaging.layout），并在包根生成双语 README 索引。
+    """
+    from geo_optimizer.web.portal.packaging import layout
+
     artifact_dir = Path(artifact_dir)
-    files = [
-        p for p in artifact_dir.rglob("*")
-        if p.is_file() and p.suffix.lower() != ".zip"
-    ]
-    if not files:
+    has_files = any(
+        p.is_file() and p.suffix.lower() != ".zip" for p in artifact_dir.rglob("*")
+    )
+    if not has_files:
         return None
 
     zip_path = artifact_dir / f"geo_plan_{task_id}.zip"
     try:
         with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zf:
-            for f in files:
-                zf.write(f, arcname=f.relative_to(artifact_dir).as_posix())
+            stats = layout.pack_artifact_dir(zf, artifact_dir)
+            zf.writestr("README.md",
+                        layout.readme_text(stats, target_url).encode("utf-8"))
         return str(zip_path)
     except Exception as exc:  # noqa: BLE001
         logger.warning("打包失败: %s", exc)

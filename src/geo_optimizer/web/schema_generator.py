@@ -19,8 +19,14 @@ logger = logging.getLogger(__name__)
 class SchemaGenerator:
     """多语言 JSON-LD Schema 生成"""
 
-    def generate(self, page: CrawledPage, faqs: list[FAQ], config: dict) -> dict:
-        """为单页生成完整 Schema（多类型组合）"""
+    def generate(self, page: CrawledPage, faqs: list[FAQ], config: dict,
+                 lang: Optional[str] = None) -> dict:
+        """为单页生成完整 Schema（多类型组合）。
+
+        lang 指定时只保留该语言的 FAQ 并显式声明 inLanguage，供双语包按
+        zh/ 与 en/ 各出一份；None 时保持既有行为（全部 FAQ，双语 inLanguage）。
+        WebPage/Article 的 name/description 取自抓取快照，只能保持站点原始语言。
+        """
         schemas = {}
 
         # 1. WebPage 基础
@@ -31,8 +37,9 @@ class SchemaGenerator:
             schemas["Article"] = self._article_schema(page)
 
         # 3. FAQPage（如果有 FAQ）
-        if faqs:
-            schemas["FAQPage"] = self._faqpage_schema(faqs)
+        picked = self._filter_faqs(faqs, lang)
+        if picked:
+            schemas["FAQPage"] = self._faqpage_schema(picked, lang=lang)
 
         # 4. Organization（站点信息）
         schemas["Organization"] = self._organization_schema(config)
@@ -42,6 +49,14 @@ class SchemaGenerator:
             schemas["BreadcrumbList"] = self._breadcrumb_schema(page)
 
         return schemas
+
+    @staticmethod
+    def _filter_faqs(faqs: list[FAQ], lang: Optional[str]) -> list[FAQ]:
+        if lang == "zh":
+            return [f for f in faqs if f.language == "zh-CN"] or faqs
+        if lang == "en":
+            return [f for f in faqs if f.language == "en-US"]
+        return faqs
 
     def render_jsonld(self, schemas: dict) -> str:
         """渲染为可注入的 <script> 标签"""
@@ -80,7 +95,7 @@ class SchemaGenerator:
         }
 
     @staticmethod
-    def _faqpage_schema(faqs: list[FAQ]) -> dict:
+    def _faqpage_schema(faqs: list[FAQ], lang: Optional[str] = None) -> dict:
         """FAQPage schema（按语言分组）"""
         faq_items = []
         for f in faqs:
@@ -99,11 +114,16 @@ class SchemaGenerator:
             "mainEntity": faq_items,
         }
 
-        # 多语言支持
-        zh_faqs = [f for f in faqs if f.language == "zh-CN"]
-        en_faqs = [f for f in faqs if f.language == "en-US"]
-        if zh_faqs and en_faqs:
-            schema["inLanguage"] = ["zh-CN", "en-US"]
+        # 多语言支持：单语输出时显式声明该语言，混合输出时列出两种
+        if lang == "zh":
+            schema["inLanguage"] = "zh-CN"
+        elif lang == "en":
+            schema["inLanguage"] = "en-US"
+        else:
+            zh_faqs = [f for f in faqs if f.language == "zh-CN"]
+            en_faqs = [f for f in faqs if f.language == "en-US"]
+            if zh_faqs and en_faqs:
+                schema["inLanguage"] = ["zh-CN", "en-US"]
 
         return schema
 

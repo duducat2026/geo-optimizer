@@ -19,6 +19,7 @@ from geo_optimizer.web.portal.audit import service as audit
 from geo_optimizer.web.portal.extensions import db
 from geo_optimizer.web.portal.i18n import translate as _
 from geo_optimizer.web.portal.models import EvalTask, PlanArtifact, PlanItem
+from geo_optimizer.web.portal.packaging import layout
 from geo_optimizer.web.portal.planitems import artifact_catalog, artifact_generator
 from geo_optimizer.web.portal.planitems.catalog import engines_map
 
@@ -46,8 +47,9 @@ def item_list(task_id):
 def item_edit(item_id):
     item = _owned_item_or_404(item_id)
     if request.method == "POST":
-        content = request.form.get("content") or ""
-        item.content = content
+        item.content = request.form.get("content") or ""
+        if "content_en" in request.form:      # 老任务模板可能没有英文框
+            item.content_en = request.form.get("content_en") or ""
         db.session.commit()
         audit.record(audit.ACTION_PLAN_ITEM_EDIT, target=item.code,
                      detail=f"task={item.task_id}")
@@ -153,9 +155,12 @@ def item_download(item_id):
     item = _owned_item_or_404(item_id)
     audit.record(audit.ACTION_PLAN_ITEM_DOWNLOAD, target=item.code,
                  detail=f"task={item.task_id}")
-    buf = io.BytesIO(item.content.encode("utf-8"))
+    lang = (request.args.get("lang") or "").lower()
+    text = (item.content_en or item.content) if lang == "en" else item.content
+    name = layout.plan_item_name(f"{item.priority}_{item.code}", lang)
+    buf = io.BytesIO((text or "").encode("utf-8"))
     return send_file(buf, as_attachment=True, mimetype="text/markdown",
-                     download_name=f"{item.priority}_{item.code}.md")
+                     download_name=name)
 
 
 @bp.route("/<task_id>/download")
@@ -178,13 +183,14 @@ def bundle_download(task_id):
         abort(403)
     buf = io.BytesIO()
     with zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED) as zf:
-        # 评估报告 PDF（若已生成）
-        _add_report_files(zf, task)
+        stats = layout.new_stats()
+        # 评估报告 PDF/MD（若已生成）+ 方案条目 + 产出物，统一按语言分目录归档
+        _add_report_files(zf, task, stats)
         for item in items:
-            zf.writestr(f"{item.priority}_{item.code}.md",
-                        item.content.encode("utf-8"))
+            _add_plan_item(zf, item, stats)
         for art in PlanArtifact.query.filter_by(task_id=task_id).all():
-            zf.writestr(f"artifacts/{art.filename}", art.content.encode("utf-8"))
+            _add_artifact(zf, art, stats)
+        zf.writestr("README.md", layout.readme_text(stats, task.target_url))
     buf.seek(0)
     audit.record(audit.ACTION_PLAN_ITEM_DOWNLOAD, target=task.target_url,
                  detail=f"task={task_id} bundle={len(items)}")
@@ -193,17 +199,40 @@ def bundle_download(task_id):
                      download_name=download_filename(task.target_url))
 
 
-def _add_report_files(zf, task) -> None:
-    """将任务产物目录中的评估报告（PDF/MD）加入 ZIP。"""
+def _add_plan_item(zf, item, stats) -> None:
+    """方案条目：有独立英文稿时 zh/ en/ 各一份，否则中英合稿放 zh/。"""
+    zh_arc, en_arc = layout.plan_item_arcname(item)
+    texts = layout.item_texts(item)
+    if "zh" in texts:
+        layout.record(stats, _writestr(zf, zh_arc, texts["zh"]))
+    if "en" in texts:
+        layout.record(stats, _writestr(zf, en_arc, texts["en"]))
+
+
+def _add_artifact(zf, art, stats) -> None:
+    """产出物：按规格语言进 zh/ en/，规则类（sitemap/robots）不带语言前缀。"""
+    layout.record(stats, _writestr(zf, layout.artifact_arcname(art.kind, art.filename),
+                                   art.content or ""))
+
+
+def _writestr(zf, arcname: str, text: str) -> str:
+    zf.writestr(arcname, text.encode("utf-8"))
+    return arcname
+
+
+def _add_report_files(zf, task, stats) -> None:
+    """将任务产物目录中的中英评估报告（PDF/MD）按语言加入 ZIP。"""
     from pathlib import Path
 
     if not task.artifact_dir:
         return
     base = Path(task.artifact_dir)
-    for name in ("geo_analysis_report.pdf", "geo_analysis_report.md"):
-        fp = base / name
-        if fp.is_file():
-            zf.write(fp, arcname=f"report/{name}")
+    for lang in layout.LANGS:
+        md_arc, pdf_arc = layout.report_arcnames(lang)
+        for disk_name, arc in zip(layout.report_names(lang), (md_arc, pdf_arc)):
+            fp = base / disk_name
+            if fp.is_file():
+                layout.record(stats, layout.zf_write_file(zf, fp, arc))
 
 
 def _owned_task_or_404(task_id: str) -> EvalTask:

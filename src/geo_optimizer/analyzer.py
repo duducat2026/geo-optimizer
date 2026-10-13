@@ -26,6 +26,7 @@ class EngineScore:
     score: float            # 0-100
     breakdown: dict         # 子维度分数
     suggestions: list       # 改进建议
+    focus: list = field(default_factory=list)   # 引擎关注点（报告双语渲染需要）
 
 
 @dataclass
@@ -160,6 +161,7 @@ class GEOAnalyzer:
             score=final_score,
             breakdown=breakdown,
             suggestions=suggestions,
+            focus=list(engine_cfg.get("focus", [])),
         )
 
     def _score_en(self, page: CrawledPage, engine_cfg: dict, config: dict) -> EngineScore:
@@ -212,6 +214,7 @@ class GEOAnalyzer:
             score=final_score,
             breakdown=breakdown,
             suggestions=suggestions,
+            focus=list(engine_cfg.get("focus", [])),
         )
 
     def _boosted_weights(self, base_dimensions: dict, engine_cfg: dict) -> dict:

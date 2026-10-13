@@ -223,6 +223,11 @@ MESSAGES: dict[str, dict[str, str]] = {
     "source_template": {"zh": "内置模板", "en": "Built-in template"},
     "edit_item": {"zh": "编辑", "en": "Edit"},
     "download_item": {"zh": "下载 .md", "en": "Download .md"},
+    "download_item_en": {"zh": "下载英文版", "en": "Download English"},
+    "content_zh_label": {"zh": "中文正文（Markdown）", "en": "Chinese content (Markdown)"},
+    "content_en_label": {"zh": "英文正文（Markdown）", "en": "English content (Markdown)"},
+    "content_en_hint": {"zh": "英文正文留空时，打包下载沿用上方中英合稿；历史任务可在此补写英文稿",
+                        "en": "Leave empty to keep the combined draft; add an English version here for legacy tasks"},
     "item_saved": {"zh": "条目已保存", "en": "Item saved"},
     "updated_at": {"zh": "更新时间", "en": "Updated"},
     # 具体产出物（sitemap/robots/文章/FAQ 等）

@@ -80,33 +80,43 @@ def create_app() -> Flask:
 def _ensure_schema_upgrades() -> None:
     """为已存在的表补齐新增列（create_all 只建新表，不改旧表）。
 
-    幂等：逐列 ALTER，忽略"列已存在"类错误（MySQL 1060 / SQLite duplicate），
+    幂等：逐表逐列 ALTER，忽略"列已存在"类错误（MySQL 1060 / SQLite duplicate），
     兼容 MySQL 与 SQLite；即使 inspector 检测结果不可靠也不会导致启动崩溃。
     """
     from sqlalchemy import inspect, text
 
     try:
-        inspector = inspect(db.engine)
-        if "api_keys" not in inspector.get_table_names():
-            return
+        existing_tables = set(inspect(db.engine).get_table_names())
     except Exception:  # 检测失败也不阻断启动，交给下面的 ALTER 容错
-        pass
+        existing_tables = None
+    if existing_tables is not None and "api_keys" not in existing_tables:
+        return  # 尚未建表，create_all 会直接带上新列
 
+    mysql = db.engine.dialect.name == "mysql"
+    big_text = "LONGTEXT NULL" if mysql else "TEXT NULL"
     additions = {
-        "daily_quota": "INTEGER NOT NULL DEFAULT 50",
-        "calls_today": "INTEGER NOT NULL DEFAULT 0",
-        "quota_date": "DATE NULL",
+        "api_keys": {
+            "daily_quota": "INTEGER NOT NULL DEFAULT 50",
+            "calls_today": "INTEGER NOT NULL DEFAULT 0",
+            "quota_date": "DATE NULL",
+        },
+        "plan_items": {
+            "content_en": big_text,     # 双语包英文段落
+        },
     }
-    for col, ddl in additions.items():
-        try:
-            with db.engine.begin() as conn:
-                conn.execute(text(f"ALTER TABLE api_keys ADD COLUMN {col} {ddl}"))
-            logger.info("[migrate] api_keys.%s 已补列", col)
-        except Exception as exc:  # noqa: BLE001
-            msg = str(exc).lower()
-            if "duplicate column" in msg or "1060" in msg or "already exists" in msg:
-                continue  # 列已存在，视为成功
-            logger.warning("[migrate] api_keys.%s 补列跳过: %s", col, exc)
+    for table, cols in additions.items():
+        if existing_tables is not None and table not in existing_tables:
+            continue
+        for col, ddl in cols.items():
+            try:
+                with db.engine.begin() as conn:
+                    conn.execute(text(f"ALTER TABLE {table} ADD COLUMN {col} {ddl}"))
+                logger.info("[migrate] %s.%s 已补列", table, col)
+            except Exception as exc:  # noqa: BLE001
+                msg = str(exc).lower()
+                if "duplicate column" in msg or "1060" in msg or "already exists" in msg:
+                    continue  # 列已存在，视为成功
+                logger.warning("[migrate] %s.%s 补列跳过: %s", table, col, exc)
 
 
 def _register_blueprints(app: Flask) -> None:

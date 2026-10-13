@@ -339,14 +339,14 @@
           <pre><span class="p">$</span> curl -o report.zip http://localhost:5001/api/v1/tasks/67dcbe3c-.../download \
     -H <span class="s">"Authorization: Bearer geo_your_key"</span></pre>
         </div>
-        <p>ZIP 包内容（plan 类型）：</p>
+        <p>ZIP 包内容（plan 类型，中英文双语）：</p>
         <ul>
-          <li><code>geo_analysis_report.md</code> — 完整分析报告</li>
-          <li><code>schema.jsonld.html</code> — Schema.org 结构化数据</li>
-          <li><code>wechat_*.md</code> / <code>zhihu_*.md</code> / <code>toutiao_*.md</code> — 国内平台文章</li>
-          <li><code>medium_*.md</code> / <code>quora_*.md</code> / <code>reddit_*.md</code> — 国际平台文章</li>
-          <li><code>plan_items/</code> — 分优先级改进方案</li>
+          <li><code>README.md</code> — 双语索引（目录结构 / 建议处理顺序 / 文件清单）</li>
+          <li><code>zh/</code> — 中文报告（md+pdf）、<code>plan_items/</code>、<code>faq.md</code>、<code>schema.jsonld.html</code>、国内平台文章</li>
+          <li><code>en/</code> — 同名文件的英文版 + 国际平台文章</li>
+          <li>根目录 — 语言中性数据：<code>page_snapshot.json</code>、增强页面、<code>artifacts/</code>（sitemap/robots）</li>
         </ul>
+        <p class="muted">平台文章只生成在其目标平台语言下（知乎/公众号/头条进 <code>zh/</code>，Medium/Quora/Reddit 进 <code>en/</code>）；双语布局对新建任务生效，历史任务的包保持原结构。</p>
 
         <h3 id="s4-4">终止任务</h3>
         <div class="code-panel">

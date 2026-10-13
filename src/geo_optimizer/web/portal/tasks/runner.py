@@ -125,20 +125,21 @@ def _pipeline(task_id: str, target_url: str, task_type: str) -> None:
                     detail=(f"issues={len(audit.get('issues', []))}, "
                             f"strengths={len(audit.get('strengths', []))}"))
 
-    # 写增强版分析报告 markdown（含体检与分引擎小节）+ PDF
+    # 写中英两份分析报告（含体检与分引擎小节）+ 两份 PDF
     # eval/plan 共用：补充中间进度点，避免仅评估任务在 40% 后长时间静默
     service.check_cancelled(task_id)
     service.update_progress(task_id, 55, "generating_report")
+    from geo_optimizer.web.portal.packaging.layout import report_names
     from geo_optimizer.web.portal.tasks import report_builder
-
-    report_md = report_builder.build_markdown(result)
-    (artifact_dir / "geo_analysis_report.md").write_text(report_md, encoding="utf-8")
-    service.add_log(task_id, "log_report_written", detail="geo_analysis_report.md")
-
     from geo_optimizer.web.portal.tasks.pdf_report import generate_pdf
 
-    if generate_pdf(report_md, artifact_dir / "geo_analysis_report.pdf"):
-        service.add_log(task_id, "log_report_written", detail="geo_analysis_report.pdf")
+    for lang in ("zh", "en"):
+        md_name, pdf_name = report_names(lang)
+        report_md = report_builder.build_markdown(result, lang=lang)
+        (artifact_dir / md_name).write_text(report_md, encoding="utf-8")
+        service.add_log(task_id, "log_report_written", detail=md_name)
+        if generate_pdf(report_md, artifact_dir / pdf_name):
+            service.add_log(task_id, "log_report_written", detail=pdf_name)
 
     # 3. 方案生成（仅 plan 类型；依赖 LLM）
     if task_type == TYPE_PLAN:
@@ -156,7 +157,7 @@ def _pipeline(task_id: str, target_url: str, task_type: str) -> None:
     service.update_progress(task_id, 90, "packaging")
     from geo_optimizer.web.portal.packaging.bundler import bundle_task
 
-    zip_path = bundle_task(task_id, artifact_dir)
+    zip_path = bundle_task(task_id, artifact_dir, target_url)
     result["zip_available"] = bool(zip_path)
     if zip_path:
         try:
@@ -190,11 +191,17 @@ def _generate_plan(task_id, page, config, artifact_dir, result) -> None:
         faqs = []
 
     try:
-        schemas = SchemaGenerator().generate(page, faqs, config)
-        (artifact_dir / "schema.jsonld.html").write_text(
-            SchemaGenerator().render_jsonld(schemas), encoding="utf-8"
-        )
-        service.add_log(task_id, "log_schema_done", detail=f"{len(schemas)} JSON-LD")
+        from geo_optimizer.web.portal.packaging.layout import schema_name
+
+        gen = SchemaGenerator()
+        for lang in ("zh", "en"):
+            schemas = gen.generate(page, faqs, config, lang=lang)
+            if not schemas:
+                continue
+            (artifact_dir / schema_name(lang)).write_text(
+                gen.render_jsonld(schemas), encoding="utf-8"
+            )
+        service.add_log(task_id, "log_schema_done", detail="zh + en JSON-LD")
     except Exception as exc:  # noqa: BLE001
         logger.warning("Schema 生成失败: %s", exc)
         service.add_log(task_id, "log_schema_failed", detail=str(exc)[:200], level="warn")
@@ -272,6 +279,7 @@ def _serialize_analysis(page, analysis) -> dict:
                 "score": s.score,
                 "breakdown": s.breakdown,
                 "suggestions": s.suggestions,
+                "focus": list(getattr(s, "focus", []) or []),
             }
             for s in analysis.engine_scores
         ],

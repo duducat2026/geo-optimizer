@@ -50,6 +50,10 @@
               {{ _('edit_item') }}</a>
             <a class="btn btn-sm btn-ghost" href="{{ url_for('plan.item_download', item_id=item.id) }}">
               {{ _('download_item') }}</a>
+            {% if item.has_en %}
+            <a class="btn btn-sm btn-ghost" title="{{ _('download_item_en') }}"
+               href="{{ url_for('plan.item_download', item_id=item.id, lang='en') }}">EN</a>
+            {% endif %}
           </td>
         </tr>
         {% endfor %}

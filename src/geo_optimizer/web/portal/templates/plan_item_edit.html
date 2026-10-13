@@ -12,11 +12,19 @@
   </p>
 
   <form method="post">
-    <textarea name="content" class="editor" rows="24" spellcheck="false">{{ item.content }}</textarea>
+    <label class="muted" for="content-zh">{{ _('content_zh_label') }}</label>
+    <textarea id="content-zh" name="content" class="editor" rows="20" spellcheck="false">{{ item.content }}</textarea>
+    <label class="muted mt" for="content-en">{{ _('content_en_label') }}</label>
+    <p class="muted" style="font-size:.85em">{{ _('content_en_hint') }}</p>
+    <textarea id="content-en" name="content_en" class="editor" rows="20" spellcheck="false">{{ item.content_en or '' }}</textarea>
     <div class="mt">
       <button class="btn" type="submit">{{ _('save') }}</button>
       <a class="btn btn-ghost" href="{{ url_for('plan.item_download', item_id=item.id) }}">
         {{ _('download_item') }}</a>
+      {% if item.has_en %}
+      <a class="btn btn-ghost" href="{{ url_for('plan.item_download', item_id=item.id, lang='en') }}">
+        {{ _('download_item_en') }}</a>
+      {% endif %}
       <a class="btn btn-ghost" href="{{ url_for('plan.item_list', task_id=item.task_id) }}">
         {{ _('back') }}</a>
     </div>
