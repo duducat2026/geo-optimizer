@@ -280,12 +280,22 @@ curl -o report.zip http://localhost:5001/api/v1/tasks/67dcbe3c-.../download \
   -H "Authorization: Bearer geo_your_key"
 ```
 
-ZIP contents (`plan` tasks):
-- `geo_analysis_report.md` — full analysis report
-- `schema.jsonld.html` — Schema.org structured data
-- `wechat_*.md` / `zhihu_*.md` / `toutiao_*.md` — Chinese platform articles
-- `medium_*.md` / `quora_*.md` / `reddit_*.md` — international platform articles
-- `plan_items/` — improvement items grouped by priority
+ZIP contents (`plan` tasks, bilingual):
+- `README.md` — bilingual index (structure, suggested order, file inventory)
+- `zh/` — Chinese side: `geo_analysis_report.md`/`.pdf`, `plan_items/`, `faq.md`,
+  `schema.jsonld.html`, plus Chinese-platform drafts
+  (`wechat_*.md` / `zhihu_*.md` / `toutiao_*.md`)
+- `en/` — English side: the same file names with English content, plus overseas
+  drafts (`medium_*.md` / `quora_*.md` / `reddit_*.md`)
+- Package root — language-neutral data: `page_snapshot.json`, the enhanced
+  `<slug>.html`, `<slug>_schema.json`, `<slug>_authority.md`, and rule-based
+  deliverables under `artifacts/`
+
+> Platform drafts are generated only in the language of their target platform, so
+> `zh/` holds Zhihu/WeChat/Toutiao drafts while `en/` holds Medium/Quora/Reddit
+> drafts — no unpublishable translations are produced.
+> The bilingual layout applies to newly submitted tasks; packages of historical
+> tasks keep their original flat structure.
 
 ### 4.4 Cancelling a task
 

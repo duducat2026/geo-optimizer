@@ -281,17 +281,21 @@ result = client.get_result(task_id)
 path = client.download(task_id, "./output/geo_report.zip")
 ```
 
-**ZIP contents (plan task):**
+**ZIP contents (plan task, bilingual):**
 
-- `geo_analysis_report.md` — Full analysis report
-- `schema.jsonld.html` — Schema.org structured data
-- `wechat_*.md` — WeChat article
-- `zhihu_*.md` — Zhihu article
-- `toutiao_*.md` — Toutiao article
-- `medium_*.md` — Medium article
-- `quora_*.md` — Quora answer
-- `reddit_*.md` — Reddit post
-- `plan_items/` — Prioritized action items
+- `README.md` — bilingual index (structure, suggested order, file inventory)
+- `zh/` — Chinese side: `geo_analysis_report.md` + `.pdf`, `plan_items/`,
+  `faq.md`, `schema.jsonld.html`, and Chinese-platform drafts
+  (`wechat_*.md`, `zhihu_*.md`, `toutiao_*.md`)
+- `en/` — English side: the same file names in English, plus overseas drafts
+  (`medium_*.md`, `quora_*.md`, `reddit_*.md`)
+- Package root — language-neutral data: `page_snapshot.json`, the enhanced
+  `<slug>.html`, `<slug>_schema.json`, `<slug>_authority.md`, `artifacts/`
+
+Platform drafts live only under the language of their target platform, so every
+file in the package is directly usable — no unpublishable translations. The
+bilingual layout applies to tasks submitted from now on; packages of older tasks
+keep their original flat structure.
 
 ## CLI Usage
 

@@ -420,8 +420,10 @@ async def geo_download_report(
 ) -> str:
     """把已完成任务的评估报告与改进方案 ZIP 包下载到本地指定路径。
 
-    ZIP 内含 geo_analysis_report.md、schema.jsonld.html、多平台内容
-    （wechat/zhihu/toutiao/medium/quora/reddit）与 plan_items/ 行动项。
+    ZIP 为中英双语布局：包根 README.md 索引，zh/ 与 en/ 各放一份分析报告
+    （md+pdf）、plan_items/ 行动项、faq.md、schema.jsonld.html；平台稿只出现在
+    其目标语言侧（zh/ 为 wechat/zhihu/toutiao，en/ 为 medium/quora/reddit），
+    语言中性数据（page_snapshot.json 等）留在包根。
     仅 plan 任务且方案已生成时可下载；eval 任务或无方案包时返回错误提示。
 
     Args:

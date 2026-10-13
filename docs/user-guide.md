@@ -281,12 +281,18 @@ curl -o report.zip http://localhost:5001/api/v1/tasks/67dcbe3c-.../download \
   -H "Authorization: Bearer geo_your_key"
 ```
 
-ZIP 包内容（plan 类型）：
-- `geo_analysis_report.md` — 完整分析报告
-- `schema.jsonld.html` — Schema.org 结构化数据
-- `wechat_*.md` / `zhihu_*.md` / `toutiao_*.md` — 国内平台文章
-- `medium_*.md` / `quora_*.md` / `reddit_*.md` — 国际平台文章
-- `plan_items/` — 分优先级改进方案
+ZIP 包内容（plan 类型，中英文双语）：
+- `README.md` — 双语索引（目录结构、建议处理顺序、文件清单）
+- `zh/` — 中文一侧：`geo_analysis_report.md`/`.pdf`、`plan_items/`、`faq.md`、
+  `schema.jsonld.html`，以及国内平台稿 `wechat_*.md` / `zhihu_*.md` / `toutiao_*.md`
+- `en/` — 英文一侧：同名报告与 `plan_items/`、`faq.md`、`schema.jsonld.html`，
+  以及海外平台稿 `medium_*.md` / `quora_*.md` / `reddit_*.md`
+- 根目录 — 语言中性数据：`page_snapshot.json`、增强后的 `<slug>.html`、
+  `<slug>_schema.json`、`<slug>_authority.md`、规则类产出物 `artifacts/`
+
+> 平台发布稿只生成在其目标平台语言下，因此 `zh/` 含知乎/公众号/头条稿，
+> `en/` 含 Medium/Quora/Reddit 稿，不会产生无法直接发布的译文稿。
+> 双语布局对新建任务生效，历史任务的包保持原扁平结构。
 
 ### 4.4 终止任务
 

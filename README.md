@@ -76,7 +76,7 @@ data/artifacts/               — Runtime artifacts (gitignored)
 - **Quota governance** — Daily-resetting evaluation quota, usage statistics
 - **Compute plans** — System-level multi-source chain (`SystemLLMConfig`) with priorities, plus user-owned keys; the active source is always labelled
 - **Task queue** — Async background execution, fine-grained processing logs, retry on failure, cancellation
-- **Plan packaging** — Generates plan artifacts (body copy / FAQ / Schema / platform drafts), ZIP bundle download, PDF report
+- **Plan packaging** — Bilingual ZIP bundle with a `zh/` and an `en/` tree (analysis report in Markdown + PDF, action items, FAQ, JSON-LD) plus a bilingual `README.md` index; platform drafts are filed under their target language
 
 ### 🌐 Supported AI Engines
 
